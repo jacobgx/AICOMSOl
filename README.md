@@ -99,7 +99,7 @@ grep -i "NLfail" database/experience/comsol_debug_reference.txt
 
 ## 作者
 
-**能动李老师**（全网同名）
+**能动李老师**（全网同名 B站放长视频、小红书放短视频）
 
 - 📚 公众号：**通天达灵** — 关注获取更多 COMSOL 多物理场建模知识分享
 - 📧 邮箱：Jacobgx@163.com — 欢迎项目合作与技术交流
