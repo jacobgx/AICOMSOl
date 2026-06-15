@@ -254,5 +254,4 @@ comsolbatch -inputfile source.mph -outputfile output.mph -pname "w1,w2,Re" -plis
 | 检查边界选择/物理场配置 | MPh | Python 交互式探针 |
 | 参数扫描 | MPh | `for Re in [10,50,100,200]: model.parameter('Re', Re); model.solve()` |
 | 从零建几何+布尔操作 | Java batch | MPh 几何 API 不如 Java 成熟 |
-| 拓扑优化 | Java batch | 已知 MPh batch 模式矩阵分解失败 |
 | 结果数据导出 | MPh | `model.evaluate()` 直接返回 numpy 数组 |
