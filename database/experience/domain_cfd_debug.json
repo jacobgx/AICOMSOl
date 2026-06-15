@@ -1,0 +1,295 @@
+{
+  "domain": "CFD 计算流体力学 (CFD Module)",
+  "physics": ["LaminarFlow (spf)", "TurbulentFlow", "HeatTransfer (ht)", "NonIsothermalFlow", "ConjugateHeatTransfer"],
+  "description": "COMSOL CFD 模块建模思路、边界条件选择、收敛技巧与调试经验汇总",
+  "sources": [
+    "CFDModuleUsersGuide.pdf — COMSOL 6.3 官方用户指南 (~1100页)",
+    "IntroductionToCFDModule.pdf — CFD 模块入门 (~50页)",
+    "COMSOL Blog: Viscosity Ramping Improves CFD Convergence",
+    "COMSOL Blog: Using the Inflow Boundary Condition in Nonisothermal Flow",
+    "COMSOL Blog: Which Turbulence Model Should I Choose",
+    "COMSOL 6.3 Docs: Pseudo Time Stepping for Laminar Flow Models",
+    "AltaSim Technologies: CFD Training Course Materials",
+    "ECCOMAS 2024: ML-Enhanced Convergence for Navier-Stokes"
+  ],
+
+  "modeling_workflow": {
+    "description": "CFD 建模标准流程（按顺序执行）",
+    "steps": [
+      {
+        "step": 1,
+        "name": "判断流态",
+        "actions": [
+          "计算雷诺数 Re = ρUL/μ",
+          "Re < 1 → 蠕动流 (Creeping Flow)",
+          "1 < Re < ~2000 → 层流 (Laminar Flow)",
+          "Re > ~2000 → 湍流 (Turbulent Flow)",
+          "自然对流：计算 Grashof 数 Gr = gβΔTL³/ν²，Gr/Re² >> 1 时自然对流主导"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "选择物理场接口",
+        "actions": [
+          "单相层流 → Laminar Flow (spf)",
+          "单相湍流 → Turbulent Flow, k-ε (spf)",
+          "层流+传热 → Nonisothermal Flow 或 Conjugate Heat Transfer (如有固体域)",
+          "蠕动流 → Creeping Flow（忽略惯性项，更稳定）",
+          "多孔介质 → Brinkman Equations 或 Free and Porous Media Flow"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "设置边界条件",
+        "actions": [
+          "入口：优先用 Inflow BC（非等温流），其次 Velocity/Pressure",
+          "出口：Pressure + No Viscous Stress + ConvectiveOutflow（传热时）",
+          "壁面：No-slip (默认) + 热边界（Temperature/HeatFlux/ConvectiveCooling）",
+          "⚠️ 3D 层流需 Pressure Point Constraint（若无显式压力边界）"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "网格划分",
+        "actions": [
+          "通道厚度方向至少 4-6 个单元",
+          "壁面边界层网格（物理场控制网格默认添加）",
+          "先粗网格 → 验证收敛 → 再加密",
+          "湍流低 Re 模型：检查无量纲壁面距离 ≤ 0.5"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "求解策略",
+        "actions": [
+          "稳态层流：开启伪时间步进 (Pseudo Time Stepping)",
+          "湍流：先 k-ε 粗网格收敛 → 以此为初值切换 SST/k-ω",
+          "不收敛：粘度渐变法 / 入口速度渐变法 / 各向同性扩散稳定",
+          "多物理场：先解流动 → 再加传热（与铁律四一致）"
+        ]
+      }
+    ]
+  },
+
+  "boundary_conditions": {
+    "inlet": {
+      "velocity_inlet": {
+        "use": "已知入口速度剖面",
+        "api": ".create(\"inl1\", \"InletBoundary\", 1); .feature(\"inl1\").set(\"U0in\", \"1[m/s]\")",
+        "pros": "简单直接",
+        "cons": "靠近加热/冷却区时温度分布可能不真实"
+      },
+      "pressure_inlet": {
+        "use": "已知入口总压",
+        "api": ".create(\"inl1\", \"InletBoundary\", 1); .feature(\"inl1\").set(\"BoundaryCondition\", \"Pressure\"); .feature(\"inl1\").set(\"p0\", \"1\")",
+        "pros": "适合多分支流动",
+        "cons": "需知道压力值"
+      },
+      "inflow_thermal": {
+        "use": "非等温流入口（推荐首选）",
+        "api": ".create(\"ifl1\", \"Inflow\", 1); .feature(\"ifl1\").set(\"T0\", \"T_in\")",
+        "pros": "考虑上游导热反馈，比固定温度 BC 更真实（可避免高估热通量 ~2×）",
+        "cons": "轻微增加设置复杂度",
+        "note": "高流速时趋近 Temperature BC；低流速时允许域内传热影响入口温度分布"
+      }
+    },
+    "outlet": {
+      "pressure_outlet": {
+        "use": "已知出口压力（如大气压）",
+        "api": ".create(\"out1\", \"OutletBoundary\", 1); .feature(\"out1\").set(\"p0\", \"0[Pa]\")",
+        "thermal_pairing": "ConvectiveOutflow（零传导热通量，纯对流出流）",
+        "api_thermal": ".create(\"ofl1\", \"ConvectiveOutflow\", 1)"
+      },
+      "open_boundary": {
+        "use": "自然对流或出口条件未知",
+        "api": ".create(\"open1\", \"OpenBoundary\", 1)",
+        "pros": "允许流入/流出，自动处理压力",
+        "cons": "计算量略大"
+      }
+    },
+    "wall": {
+      "no_slip": "默认，流固界面 u=0",
+      "slip": "对称面或自由液面",
+      "thermal": "Temperature / HeatFlux / ConvectiveCooling / ThermalInsulation"
+    },
+    "pressure_point": {
+      "use": "3D 层流无显式压力边界时必须添加",
+      "api": ".create(\"pp1\", \"PressurePointConstraint\", 1); .feature(\"pp1\").selection().set(new int[]{1})",
+      "note": "2D 通常不需要，3D 缺少会导致奇异压力场"
+    }
+  },
+
+  "convergence_techniques": {
+    "description": "CFD 专属收敛技巧（不包含通用求解器调节，见 comsol_debug_reference）",
+
+    "pseudo_time_stepping": {
+      "what": "虚构时间导数，将非线性迭代转为类瞬态步进",
+      "when": "稳态层流牛顿迭代失败时（默认开启）",
+      "mechanism": "PID 调节的 CFL 数 (CFLCMP)，从 ~1.3 增到 ~10⁶",
+      "api": ".prop(\"AdvancedSettingProperty\").set(\"UsePseudoTime\", \"1\")",
+      "tuning": "困难流动可手动调低初始 CFL"
+    },
+
+    "viscosity_ramping": {
+      "what": "从高粘度（低 Re，弱非线性）逐步降到目标粘度",
+      "when": "高 Re 湍流不收敛",
+      "how": [
+        "定义参数 visc_ramp，乘到粘度上",
+        "稳态研究 + Auxiliary Sweep: visc_ramp = 1000 → 100 → 10 → 1",
+        "求解器可自动回溯到中间值"
+      ]
+    },
+
+    "inlet_velocity_ramping": {
+      "what": "从零速逐步 ramp 到目标入口速度",
+      "when": "入口速度大导致初始残差过大",
+      "how": "入口速度 × step1(t) 或 ramp 函数",
+      "alternative": "自然对流可用重力 ramp，非牛顿流可用 flow behavior index n ramp"
+    },
+
+    "isotropic_diffusion_stabilization": {
+      "what": "添加各向同性扩散项稳定求解",
+      "when": "对流主导 (高 Pe) 导致震荡",
+      "how": "先用高扩散求解 → 逐步降低扩散 → 最终无扩散"
+    },
+
+    "segregated_solver_cfl": {
+      "what": "监控分离求解器的 CFL 比",
+      "check": "CFL 比必须达到 1 才算收敛",
+      "note": "伪时间步进 + 分离求解器时尤其重要"
+    }
+  },
+
+  "turbulence_model_selection": {
+    "description": "8 种 RANS 湍流模型选择指南",
+
+    "models": [
+      {
+        "model": "k-ε",
+        "best_for": "外部流动、复杂几何、工业应用",
+        "convergence": "鲁棒性好，易收敛",
+        "limitations": "逆压梯度、强曲率、射流表现差",
+        "tip": "推荐作为其他模型的初始猜测"
+      },
+      {
+        "model": "k-ω",
+        "best_for": "内部流动、强曲率、分离流、射流",
+        "convergence": "更非线性，对初值敏感",
+        "limitations": "比 k-ε 更难收敛，需用 k-ε 结果作初值"
+      },
+      {
+        "model": "SST",
+        "best_for": "通用工业模型（最常用）",
+        "convergence": "中等，混合 k-ε (远场) + k-ω (近壁)",
+        "limitations": "比 k-ε 计算量大",
+        "tip": "首选工业湍流模型"
+      },
+      {
+        "model": "Spalart-Allmaras",
+        "best_for": "空气动力学",
+        "convergence": "稳定，单方程，收敛性好",
+        "limitations": "剪切流/分离流精度低"
+      },
+      {
+        "model": "L-VEL / yPlus",
+        "best_for": "电子散热、快速估算",
+        "convergence": "最鲁棒（代数模型，无额外方程）",
+        "limitations": "精度最低"
+      }
+    ],
+
+    "workflow": "先用 k-ε 粗网格收敛 → Generate New Turbulence Interface → 切换 SST/k-ω → 加密网格",
+
+    "wall_treatment": {
+      "automatic_v53": "v5.3+ 自动壁面处理：粗网格用壁函数，细网格自动切低 Re 公式",
+      "lowRe_check": "无量纲壁面距离 ≤ 0.5 (两方程模型) 或 ~1 (代数模型)",
+      "wallFunction_check": "壁面分辨率 < 几百，壁面脱离距离 << 几何尺度"
+    }
+  },
+
+  "meshing_requirements": {
+    "rules": [
+      "通道厚度方向至少 4-6 个单元（最基本原则）",
+      "壁面必须加边界层网格 — 物理场控制网格默认添加；手动网格需自行添加",
+      "先粗后细：粗网格验证收敛 → 逐步加密",
+      "粗网格有时比细网格更易收敛（数值扩散帮助稳定）",
+      "湍流：壁面 y+ 需匹配所选壁面处理方式",
+      "大梯度区（弯管、突扩、障碍物后）局部加密"
+    ]
+  },
+
+  "common_errors": [
+    {
+      "id": "cfd-1",
+      "error": "3D 层流缺少 Pressure Point Constraint",
+      "symptom": "压力场奇异，求解失败或结果无物理意义",
+      "fix": "在任意一点添加 Pressure Point Constraint"
+    },
+    {
+      "id": "cfd-2",
+      "error": "入口/出口边界离障碍物太近",
+      "symptom": "入口流场未充分发展，出口回流",
+      "fix": "入口段 ≥ 5× 特征长度，出口段 ≥ 10× 特征长度"
+    },
+    {
+      "id": "cfd-3",
+      "error": "高 Re 层流模型不收敛",
+      "symptom": "非线性残差不下降",
+      "fix": "确认 Re 是否在层流范围；如果是湍流，必须切换到湍流模型"
+    },
+    {
+      "id": "cfd-4",
+      "error": "非等温流动入口用 Temperature BC 而非 Inflow BC",
+      "symptom": "入口附近温度分布不真实，热通量被高估",
+      "fix": "改用 Inflow BC；COMSOL 官方推荐 Inflow 作为非等温流入口首选"
+    },
+    {
+      "id": "cfd-5",
+      "error": "自然对流域尺寸人为限制了流动",
+      "symptom": "结果依赖域大小",
+      "fix": "进行域尺寸敏感性研究，扩大域直到结果不变"
+    },
+    {
+      "id": "cfd-6",
+      "error": "壁面无边界层网格",
+      "symptom": "壁面剪切应力/传热系数不准",
+      "fix": "手动或自动添加边界层网格"
+    },
+    {
+      "id": "cfd-7",
+      "error": "NonIsothermalFlow 耦合时用户自定义密度导致 rho 变量未定义",
+      "symptom": "编译或运行时变量未定义错误",
+      "fix": "手动设置 ht 的 u_src = \"root.comp1.u\"，绕开自动耦合的 rho 依赖"
+    },
+    {
+      "id": "cfd-8",
+      "error": "出口设了 Pressure BC 但忘设热 BC",
+      "symptom": "出口温度场异常",
+      "fix": "出口热配对：ConvectiveOutflow (零传导热通量)"
+    },
+    {
+      "id": "cfd-9",
+      "error": "瞬态求解在涡街脱落阶段发散 (NLfail 递增 + 步长崩塌至 ~1e-15)",
+      "symptom": "前段正常运行（如 0→7.4s NLfail=0），t>7s 后步长指数衰减、NLfail 递增",
+      "root_cause": "高 Re 数绕流本质非定常，涡脱落产生大梯度，网格不足以解析",
+      "fix": "三项组合：(1) 入口压力缓启动 flc1hs(t-0.15,0.15) (2) 物理场控制网格 autoMeshSize(4-5) (3) 纯瞬态无需稳态初值",
+      "why_ramp_works": "缓启动避免初始冲击，给求解器积累「动量」穿过后续涡脱落的非线性区域",
+      "failed_approaches": ["稳态求解器（本质非定常，无稳态解）", "增大 maxiter/maxorder（不治本）", "仅降低 ΔP（延迟但不可避免发散）"],
+      "example": "20m×6m 域，5m×1.6m 方柱障碍物，ΔP=10Pa，空气 → 需 autoMeshSize(5)+ramp"
+    },
+    {
+      "id": "cfd-10",
+      "error": "布尔操作后用硬编码边界编号设置 BC",
+      "symptom": "边界条件应用到错误边界（如入口压力设到出口），流场异常",
+      "root_cause": "差集/并集后 COMSOL 重新编号边界，编号不可预测",
+      "fix": "使用 Box 坐标框选 + named() 引用：selection().create(\"sel_name\",\"Box\") + 设 xmin/xmax/ymin/ymax + .selection().named(\"sel_name\")",
+      "note": "类型名是 \"Box\" 不是 \"BoxSelection\"（后者仅限 geom() 内部使用）"
+    }
+  ],
+
+  "compressible_flow_tips": {
+    "weakly_compressible": "首选 — 压力影响密度但冲击不显著",
+    "fully_compressible": "仅当压力显著影响密度时使用，收敛困难",
+    "high_mach": "Ma > 0.3 → 用 High Mach Number Flow 接口"
+  }
+}

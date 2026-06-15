@@ -1,0 +1,54 @@
+# === 个人数据 ===
+# 个人模型卡片和源码
+database/personal_model_cards.json
+database/Personal_model/
+
+# 个人信息文件
+资料库位置.txt
+个人*.txt
+
+# === COMSOL 版权内容（需用户从自己的 COMSOL 安装目录自行构建）===
+# 如果担心版权问题，取消以下注释：
+# database/applications/
+# database/model_cards.json
+# database/PDF/
+
+# === 个人建模输出 ===
+result/
+
+# === 个人配置 ===
+.claude/
+history/
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# === 大型二进制文件 ===
+*.mph
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === 环境变量（本地覆盖）===
+.env
+.env.local

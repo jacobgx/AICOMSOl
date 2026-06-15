@@ -1,0 +1,475 @@
+/*
+ * fountain_flow.java
+ */
+
+import com.comsol.model.*;
+import com.comsol.model.util.*;
+
+/** Model exported on Apr 30 2026, 09:58 by COMSOL 6.3.0.290. */
+public class fountain_flow {
+
+  public static Model run() {
+    Model model = ModelUtil.create("Model");
+
+    model
+         .modelPath("D:\\Program Files\\COMSOL\\COMSOL63\\Multiphysics\\applications\\Electrodeposition_Module\\Tutorials");
+
+    model.component().create("comp1", true);
+
+    model.component("comp1").geom().create("geom1", 2);
+    model.component("comp1").geom("geom1").axisymmetric(true);
+
+    model.component("comp1").mesh().create("mesh1");
+
+    model.component("comp1").physics().create("tds", "DilutedSpecies", "geom1");
+    model.component("comp1").physics().create("cd", "SecondaryCurrentDistribution", "geom1");
+    model.component("comp1").physics().create("els", "ElectrodeShell", "geom1");
+    model.component("comp1").physics("els").field("electricpotential").field("phis_wafer");
+    model.component("comp1").physics().create("spf", "LaminarFlow", "geom1");
+
+    model.study().create("std1");
+    model.study("std1").create("stat", "Stationary");
+    model.study("std1").feature("stat").setSolveFor("/physics/tds", true);
+    model.study("std1").feature("stat").setSolveFor("/physics/cd", true);
+    model.study("std1").feature("stat").setSolveFor("/physics/els", true);
+    model.study("std1").feature("stat").setSolveFor("/physics/spf", true);
+
+//    To import content from file, use:
+//    model.param().loadFile("FILENAME");
+    model.param().set("h_outlet", "3[mm]", "\u51fa\u53e3\u9ad8\u5ea6");
+    model.param().set("d_cell", "298[mm]", "\u7535\u6c60\u76f4\u5f84");
+    model.param().set("h_cell", "200[mm]", "\u7535\u9540\u69fd\u9ad8\u5ea6");
+    model.param().set("d_wafer", "300[mm]", "\u6676\u5706\u76f4\u5f84");
+    model.param().set("h_gap", "6[mm]", "\u7535\u6c60\u4e0e\u6676\u5706\u4e4b\u95f4\u7684\u8ddd\u79bb\u95f4\u9699");
+    model.param().set("flow_in", "20[l/min]", "\u6d41\u5165");
+    model.param().set("a_in", "(d_cell/2)^2*pi", "\u6d41\u5165\u9762\u79ef");
+    model.param().set("v_in", "flow_in/a_in", "\u5165\u53e3\u901f\u5ea6");
+    model.param().set("RPM", "30", "\u6bcf\u5206\u949f\u8f6c\u6570");
+    model.param().set("omega", "RPM*2*pi[rad/min]", "\u89d2\u901f\u5ea6");
+    model.param().set("D_Cu", "5e-6[cm^2/s]", "Cu \u79bb\u5b50\u6269\u6563\u7cfb\u6570");
+    model.param().set("c_bulk", "0.3[mol/l]", "\u672c\u4f53\u6d53\u5ea6");
+    model.param().set("sigma", "0.5[S/cm]", "\u7535\u89e3\u8d28\u7535\u5bfc\u7387");
+    model.param().set("i0", "10[A/m^2]", "\u4ea4\u6362\u7535\u6d41\u5bc6\u5ea6");
+    model.param().set("t_seed", "75[nm]", "\u79cd\u5b50\u5c42\u539a\u5ea6");
+    model.param().set("r_seed", "1.7e-6[ohm*cm]", "\u94dc\u79cd\u5b50\u5c42\u7535\u963b\u7387");
+    model.param().set("j_avg_wafer", "5[mA/cm^2]", "\u6676\u5706\u7684\u5e73\u5747\u7535\u6d41\u5bc6\u5ea6");
+    model.param().set("a_wafer", "(d_wafer/2)^2*pi", "\u6676\u5706\u9762\u79ef");
+    model.param().set("I_tot", "j_avg_wafer*a_wafer", "\u603b\u7535\u6c60\u7535\u6d41");
+    model.param().set("mu", "0.001[Pa*s]", "\u7535\u89e3\u8d28\u9ecf\u5ea6");
+    model.param().set("rho", "1100[kg/m^3]", "\u7535\u89e3\u8d28\u5bc6\u5ea6");
+
+    model.component("comp1").geom("geom1").create("r1", "Rectangle");
+    model.component("comp1").geom("geom1").feature("r1").set("size", new String[]{"d_cell/2", "h_cell"});
+    model.component("comp1").geom("geom1").feature("r1").set("pos", new String[]{"0", "-h_cell"});
+    model.component("comp1").geom("geom1").run("r1");
+    model.component("comp1").geom("geom1").create("r2", "Rectangle");
+    model.component("comp1").geom("geom1").feature("r2").set("size", new String[]{"d_wafer/2", "h_gap"});
+    model.component("comp1").geom("geom1").run("r2");
+    model.component("comp1").geom("geom1").create("pt1", "Point");
+    model.component("comp1").geom("geom1").feature("pt1").setIndex("p", "d_wafer/2", 0);
+    model.component("comp1").geom("geom1").feature("pt1").setIndex("p", "h_outlet", 1);
+    model.component("comp1").geom("geom1").runPre("fin");
+
+    model.component("comp1").selection().create("sel1", "Explicit");
+
+    model.component("comp1").geom("geom1").run();
+
+    model.component("comp1").selection("sel1").geom(1);
+    model.component("comp1").selection("sel1").set(5);
+    model.component("comp1").selection("sel1").label("\u9634\u6781");
+    model.component("comp1").selection().create("sel2", "Explicit");
+    model.component("comp1").selection("sel2").geom(1);
+    model.component("comp1").selection("sel2").set(2);
+    model.component("comp1").selection("sel2").label("\u5165\u53e3");
+    model.component("comp1").selection().create("sel3", "Explicit");
+    model.component("comp1").selection("sel3").geom(1);
+    model.component("comp1").selection("sel3").set(8);
+    model.component("comp1").selection("sel3").label("\u51fa\u53e3");
+    model.component("comp1").selection().create("sel4", "Explicit");
+    model.component("comp1").selection("sel4").geom(1);
+    model.component("comp1").selection("sel4").set(5, 9);
+    model.component("comp1").selection("sel4").label("\u65cb\u8f6c\u58c1");
+
+    model.component("comp1").physics("spf").prop("PhysicalModelProperty").set("SwirlFlow", true);
+    model.component("comp1").physics("spf").feature("fp1").set("rho_mat", "userdef");
+    model.component("comp1").physics("spf").feature("fp1").set("rho", "rho");
+    model.component("comp1").physics("spf").feature("fp1").set("mu_mat", "userdef");
+    model.component("comp1").physics("spf").feature("fp1").set("mu", "mu");
+    model.component("comp1").physics("spf").create("inl1", "InletBoundary", 1);
+    model.component("comp1").physics("spf").feature("inl1").selection().named("sel2");
+    model.component("comp1").physics("spf").feature("inl1").set("U0in", "v_in");
+    model.component("comp1").physics("spf").create("out1", "OutletBoundary", 1);
+    model.component("comp1").physics("spf").feature("out1").selection().named("sel3");
+    model.component("comp1").physics("spf").create("wallbc2", "WallBC", 1);
+    model.component("comp1").physics("spf").feature("wallbc2").selection().set(5, 9);
+    model.component("comp1").physics("spf").feature("wallbc2").set("SlidingWall", true);
+    model.component("comp1").physics("spf").feature("wallbc2").set("vw", "omega*r");
+    model.component("comp1").physics("spf").feature("init1").set("u_init", new String[]{"0", "0", "v_in"});
+    model.component("comp1").physics("spf").feature("init1").set("p_init", 1);
+    model.component("comp1").physics("cd").feature("ice1").set("sigmal_mat", "userdef");
+    model.component("comp1").physics("cd").feature("ice1")
+         .set("sigmal", new String[]{"sigma", "0", "0", "0", "sigma", "0", "0", "0", "sigma"});
+    model.component("comp1").physics("cd").create("es1", "ElectrodeSurface", 1);
+    model.component("comp1").physics("cd").feature("es1").selection().named("sel1");
+    model.component("comp1").physics("cd").feature("es1").set("phisext0", "phis_wafer");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("Eeq_mat", "NernstEquation");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("CONernst", "c/c_bulk");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("nm", 2);
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("ElectrodeKinetics", "ButlerVolmer");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("i0Type", "FromNernstEquation");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("i0_ref", "i0");
+    model.component("comp1").physics("cd").feature("es1").feature("er1").set("alphaa", 1.5);
+    model.component("comp1").physics("cd").create("ic1", "ElectrolyteCurrent", 1);
+    model.component("comp1").physics("cd").feature("ic1").selection().named("sel2");
+    model.component("comp1").physics("cd").feature("ic1").set("Itl", "I_tot");
+    model.component("comp1").physics("tds").selection().set(2);
+    model.component("comp1").physics("tds").prop("TransportMechanism").set("Migration", true);
+    model.component("comp1").physics("tds").feature("sp1").setIndex("z", 2, 0);
+    model.component("comp1").physics("tds").feature("cdm1").set("V", "phil");
+    model.component("comp1").physics("tds").feature("cdm1")
+         .set("D_c", new String[]{"D_Cu", "0", "0", "0", "D_Cu", "0", "0", "0", "D_Cu"});
+    model.component("comp1").physics("tds").feature("init1").setIndex("initc", "c_bulk", 0);
+    model.component("comp1").physics("tds").create("in1", "Inflow", 1);
+    model.component("comp1").physics("tds").feature("in1").selection().set(4);
+    model.component("comp1").physics("tds").feature("in1").setIndex("c0", "c_bulk", 0);
+    model.component("comp1").physics("tds").create("out1", "Outflow", 1);
+    model.component("comp1").physics("tds").feature("out1").selection().named("sel3");
+    model.component("comp1").physics("tds").create("eeic1", "ElectrodeElectrolyteInterfaceCoupling", 1);
+    model.component("comp1").physics("tds").feature("eeic1").selection().named("sel1");
+    model.component("comp1").physics("tds").feature("eeic1").feature("rc1")
+         .set("iloc_src", "root.comp1.cd.es1.er1.iloc");
+    model.component("comp1").physics("tds").feature("eeic1").feature("rc1").set("nm", 2);
+    model.component("comp1").physics("tds").feature("eeic1").feature("rc1").setIndex("Vib", -1, 0);
+    model.component("comp1").physics("els").selection().named("sel1");
+    model.component("comp1").physics("els").feature("ece1").set("s", "t_seed");
+    model.component("comp1").physics("els").feature("ece1").set("sigma_mat", "userdef");
+    model.component("comp1").physics("els").feature("ece1")
+         .set("sigma", new String[]{"1/r_seed", "0", "0", "0", "1/r_seed", "0", "0", "0", "1/r_seed"});
+    model.component("comp1").physics("els").create("gnd1", "Ground", 0);
+    model.component("comp1").physics("els").feature("gnd1").selection().set(8);
+    model.component("comp1").physics("els").create("ncd1", "NormalCurrentDensity", 1);
+    model.component("comp1").physics("els").feature("ncd1").selection().named("sel1");
+    model.component("comp1").physics("els").feature("ncd1").set("in_src", "root.comp1.cd.es1.er1.iloc");
+
+    model.component("comp1").multiphysics().create("rfd1", "ReactingFlowDS", 2);
+
+    model.component("comp1").mesh("mesh1").create("size1", "Size");
+    model.component("comp1").mesh("mesh1").feature("size").set("table", "cfd");
+    model.component("comp1").mesh("mesh1").feature("size").set("hauto", 6);
+    model.component("comp1").mesh("mesh1").feature("size1").selection().geom("geom1", 1);
+    model.component("comp1").mesh("mesh1").feature("size1").selection().named("sel4");
+    model.component("comp1").mesh("mesh1").feature("size1").set("custom", true);
+    model.component("comp1").mesh("mesh1").feature("size1").set("hmaxactive", true);
+    model.component("comp1").mesh("mesh1").feature("size1").set("hmax", "1.5e-4");
+    model.component("comp1").mesh("mesh1").create("ftri1", "FreeTri");
+    model.component("comp1").mesh("mesh1").create("bl1", "BndLayer");
+    model.component("comp1").mesh("mesh1").feature("bl1").create("blp", "BndLayerProp");
+    model.component("comp1").mesh("mesh1").feature("bl1").selection().geom(2);
+    model.component("comp1").mesh("mesh1").feature("bl1").selection().set();
+    model.component("comp1").mesh("mesh1").feature("bl1").selection().allGeom();
+    model.component("comp1").mesh("mesh1").feature("bl1").feature("blp").selection().set(5, 6, 7, 9);
+    model.component("comp1").mesh("mesh1").feature("bl1").feature("blp").set("blnlayers", 5);
+    model.component("comp1").mesh("mesh1").feature("bl1").feature("blp").set("blhminfact", 5);
+    model.component("comp1").mesh("mesh1").run();
+
+    model.component("comp1").physics("tds").prop("ShapeProperty").set("order_concentration", 2);
+    model.component("comp1").physics("cd").prop("ShapeProperty").set("order_electricpotentialionicphase", 2);
+    model.component("comp1").physics("spf").prop("ShapeProperty").set("order_fluid", 2);
+
+    model.study("std1").feature("stat").setSolveFor("/physics/tds", false);
+    model.study("std1").feature("stat").setSolveFor("/physics/cd", false);
+    model.study("std1").feature("stat").setSolveFor("/physics/els", false);
+    model.study("std1").create("stat2", "Stationary");
+    model.study("std1").feature("stat2").setSolveFor("/physics/spf", false);
+    model.study("std1").feature("stat2").set("useparam", true);
+    model.study("std1").feature("stat2").set("sweeptype", "filled");
+    model.study("std1").feature("stat2").setIndex("pname", "h_outlet", 0);
+    model.study("std1").feature("stat2").setIndex("plistarr", "", 0);
+    model.study("std1").feature("stat2").setIndex("punit", "m", 0);
+    model.study("std1").feature("stat2").setIndex("pname", "h_outlet", 0);
+    model.study("std1").feature("stat2").setIndex("plistarr", "", 0);
+    model.study("std1").feature("stat2").setIndex("punit", "m", 0);
+    model.study("std1").feature("stat2").setIndex("pname", "d_cell", 1);
+    model.study("std1").feature("stat2").setIndex("plistarr", "", 1);
+    model.study("std1").feature("stat2").setIndex("punit", "m", 1);
+    model.study("std1").feature("stat2").setIndex("pname", "d_cell", 1);
+    model.study("std1").feature("stat2").setIndex("plistarr", "", 1);
+    model.study("std1").feature("stat2").setIndex("punit", "m", 1);
+    model.study("std1").feature("stat2").setIndex("pname", "j_avg_wafer", 0);
+    model.study("std1").feature("stat2").setIndex("plistarr", "0.5[A/dm^2] 2[A/dm^2]", 0);
+    model.study("std1").feature("stat2").setIndex("pname", "t_seed", 1);
+    model.study("std1").feature("stat2").setIndex("plistarr", "75[nm] 150[nm]", 1);
+    model.study("std1").createAutoSequences("all");
+
+    model.sol("sol1").runAll();
+
+    model.result().create("pg1", "PlotGroup2D");
+    model.result("pg1").set("data", "dset1");
+    model.result("pg1").setIndex("looplevel", 2, 0);
+    model.result("pg1").setIndex("looplevel", 2, 1);
+    model.result("pg1").label("\u6d53\u5ea6 (tds)");
+    model.result("pg1").set("titletype", "custom");
+    model.result("pg1").set("prefixintitle", "");
+    model.result("pg1").set("expressionintitle", false);
+    model.result("pg1").set("typeintitle", false);
+    model.result("pg1").create("surf1", "Surface");
+    model.result("pg1").feature("surf1").set("expr", new String[]{"c"});
+    model.result("pg1").feature("surf1").set("colortable", "Prism");
+    model.result("pg1").set("typeintitle", true);
+    model.result("pg1").create("arws1", "ArrowSurface");
+    model.result("pg1").feature("arws1").set("expr", new String[]{"tds.tflux_cr", "tds.tflux_cz"});
+    model.result("pg1").feature("arws1").set("xnumber", 10);
+    model.result("pg1").feature("arws1").set("ynumber", 10);
+    model.result("pg1").feature("arws1").set("color", "black");
+    model.result("pg1").feature("arws1").create("sel1", "Selection");
+    model.result("pg1").feature("arws1").feature("sel1").selection().set(2);
+    model.result().dataset().create("rev1", "Revolve2D");
+    model.result().dataset("rev1").set("data", "dset1");
+    model.result().dataset("rev1").set("revangle", 225);
+    model.result().dataset("rev1").set("startangle", -90);
+    model.result().dataset("rev1").set("hasspacevars", false);
+    model.result().create("pg2", "PlotGroup3D");
+    model.result("pg2").set("data", "rev1");
+    model.result("pg2").setIndex("looplevel", 2, 0);
+    model.result("pg2").setIndex("looplevel", 2, 1);
+    model.result("pg2").label("\u6d53\u5ea6, 3D (tds)");
+    model.result("pg2").create("surf1", "Surface");
+    model.result("pg2").feature("surf1").set("expr", new String[]{"c"});
+    model.result("pg2").feature("surf1").set("colortable", "Prism");
+    model.result("pg2").set("titletype", "custom");
+    model.result("pg2").set("typeintitle", false);
+    model.result("pg2").set("prefixintitle", "");
+    model.result("pg2").set("expressionintitle", false);
+    model.result().dataset().create("rev2", "Revolve2D");
+    model.result().dataset("rev2").set("data", "dset1");
+    model.result().dataset("rev2").set("revangle", 225);
+    model.result().dataset("rev2").set("startangle", -90);
+    model.result().dataset("rev2").set("hasspacevars", true);
+    model.result().create("pg3", "PlotGroup2D");
+    model.result("pg3").set("data", "dset1");
+    model.result("pg3").setIndex("looplevel", 2, 0);
+    model.result("pg3").setIndex("looplevel", 2, 1);
+    model.result("pg3").label("\u7535\u89e3\u8d28\u7535\u4f4d (cd)");
+    model.result("pg3").create("surf1", "Surface");
+    model.result("pg3").feature("surf1").set("expr", new String[]{"phil"});
+    model.result("pg3").create("str1", "Streamline");
+    model.result("pg3").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilz"});
+    model.result("pg3").feature("str1").set("posmethod", "uniform");
+    model.result("pg3").feature("str1").set("recover", "pprint");
+    model.result("pg3").feature("str1").set("pointtype", "arrow");
+    model.result("pg3").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg3").feature("str1").set("color", "gray");
+    model.result().create("pg4", "PlotGroup3D");
+    model.result("pg4").set("data", "rev2");
+    model.result("pg4").setIndex("looplevel", 2, 0);
+    model.result("pg4").setIndex("looplevel", 2, 1);
+    model.result("pg4").label("\u7535\u89e3\u8d28\u7535\u4f4d, 3D (cd)");
+    model.result("pg4").create("mslc1", "Multislice");
+    model.result("pg4").feature("mslc1").set("expr", new String[]{"phil"});
+    model.result("pg4").create("str1", "Streamline");
+    model.result("pg4").feature("str1").set("revcoordsys", "cylindrical");
+    model.result("pg4").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilphi", "cd.Ilz"});
+    model.result("pg4").feature("str1").set("pointtype", "arrow");
+    model.result("pg4").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg4").feature("str1").set("color", "gray");
+    model.result().create("pg5", "PlotGroup2D");
+    model.result("pg5").set("data", "dset1");
+    model.result("pg5").setIndex("looplevel", 2, 0);
+    model.result("pg5").setIndex("looplevel", 2, 1);
+    model.result("pg5").label("\u7535\u89e3\u8d28\u7535\u6d41\u5bc6\u5ea6 (cd)");
+    model.result("pg5").create("str1", "Streamline");
+    model.result("pg5").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilz"});
+    model.result("pg5").feature("str1").set("posmethod", "uniform");
+    model.result("pg5").feature("str1").set("recover", "pprint");
+    model.result("pg5").feature("str1").set("pointtype", "arrow");
+    model.result("pg5").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg5").feature("str1").set("color", "gray");
+    model.result("pg5").feature("str1").create("col1", "Color");
+    model.result("pg5").feature("str1").feature("col1").set("expr", "root.comp1.cd.IlMag");
+    model.result().create("pg6", "PlotGroup3D");
+    model.result("pg6").set("data", "rev2");
+    model.result("pg6").setIndex("looplevel", 2, 0);
+    model.result("pg6").setIndex("looplevel", 2, 1);
+    model.result("pg6").label("\u7535\u89e3\u8d28\u7535\u6d41\u5bc6\u5ea6, 3D (cd)");
+    model.result("pg6").create("str1", "Streamline");
+    model.result("pg6").feature("str1").set("revcoordsys", "cylindrical");
+    model.result("pg6").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilphi", "cd.Ilz"});
+    model.result("pg6").feature("str1").set("pointtype", "arrow");
+    model.result("pg6").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg6").feature("str1").set("color", "gray");
+    model.result("pg6").feature("str1").create("col1", "Color");
+    model.result("pg6").feature("str1").feature("col1").set("expr", "root.comp1.cd.IlMag");
+    model.result("pg5").create("line1", "Line");
+    model.result("pg5").feature("line1").set("expr", new String[]{"abs(cd.itot)"});
+    model.result("pg5").feature("line1").set("linetype", "tube");
+    model.result("pg5").feature("line1").set("inherittubescale", false);
+    model.result("pg5").feature("line1").set("inheritplot", "str1");
+    model.result("pg6").create("surf1", "Surface");
+    model.result("pg6").feature("surf1").set("expr", new String[]{"abs(cd.itot)"});
+    model.result("pg6").feature("surf1").set("inheritplot", "str1");
+    model.result().create("pg7", "PlotGroup2D");
+    model.result("pg7").set("data", "dset1");
+    model.result("pg7").setIndex("looplevel", 2, 0);
+    model.result("pg7").setIndex("looplevel", 2, 1);
+    model.result("pg7").label("\u5bf9\u5730\u7535\u6781\u7535\u4f4d (cd)");
+    model.result().create("pg8", "PlotGroup3D");
+    model.result("pg8").set("data", "rev2");
+    model.result("pg8").setIndex("looplevel", 2, 0);
+    model.result("pg8").setIndex("looplevel", 2, 1);
+    model.result("pg8").label("\u5bf9\u5730\u7535\u6781\u7535\u4f4d, 3D (cd)");
+    model.result("pg7").create("line1", "Line");
+    model.result("pg7").feature("line1").set("expr", new String[]{"cd.phisext"});
+    model.result("pg7").feature("line1").set("linetype", "tube");
+    model.result("pg7").feature("line1").set("inherittubescale", false);
+    model.result("pg8").create("surf1", "Surface");
+    model.result("pg8").feature("surf1").set("expr", new String[]{"cd.phisext"});
+    model.result().create("pg9", "PlotGroup2D");
+    model.result("pg9").set("data", "dset1");
+    model.result("pg9").setIndex("looplevel", 2, 0);
+    model.result("pg9").setIndex("looplevel", 2, 1);
+    model.result("pg9").label("\u7535\u6781\u7535\u4f4d vs. \u76f8\u90bb\u53c2\u6bd4\u7535\u4f4d (cd)");
+    model.result().create("pg10", "PlotGroup3D");
+    model.result("pg10").set("data", "rev2");
+    model.result("pg10").setIndex("looplevel", 2, 0);
+    model.result("pg10").setIndex("looplevel", 2, 1);
+    model.result("pg10").label("\u7535\u6781\u7535\u4f4d vs. \u76f8\u90bb\u53c2\u6bd4\u7535\u4f4d, 3D (cd)");
+    model.result("pg9").create("str1", "Streamline");
+    model.result("pg9").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilz"});
+    model.result("pg9").feature("str1").set("posmethod", "uniform");
+    model.result("pg9").feature("str1").set("recover", "pprint");
+    model.result("pg9").feature("str1").set("pointtype", "arrow");
+    model.result("pg9").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg9").feature("str1").set("color", "gray");
+    model.result("pg10").create("str1", "Streamline");
+    model.result("pg10").feature("str1").set("revcoordsys", "cylindrical");
+    model.result("pg10").feature("str1").set("expr", new String[]{"cd.Ilr", "cd.Ilphi", "cd.Ilz"});
+    model.result("pg10").feature("str1").set("pointtype", "arrow");
+    model.result("pg10").feature("str1").set("arrowlength", "logarithmic");
+    model.result("pg10").feature("str1").set("color", "gray");
+    model.result("pg9").create("line1", "Line");
+    model.result("pg9").feature("line1").set("expr", new String[]{"cd.Evsref"});
+    model.result("pg9").feature("line1").set("linetype", "tube");
+    model.result("pg9").feature("line1").set("inherittubescale", false);
+    model.result("pg10").create("surf1", "Surface");
+    model.result("pg10").feature("surf1").set("expr", new String[]{"cd.Evsref"});
+    model.result().create("pg11", "PlotGroup2D");
+    model.result("pg11").label("\u7535\u52bf (els)");
+    model.result("pg11").set("solvertype", "none");
+    model.result("pg11").set("dataisaxisym", "off");
+    model.result("pg11").feature().create("line1", "Line");
+    model.result("pg11").feature("line1").set("showsolutionparams", "on");
+    model.result("pg11").feature("line1").set("solvertype", "none");
+    model.result("pg11").feature("line1").set("expr", "phis_wafer");
+    model.result("pg11").feature("line1").set("colortable", "Rainbow");
+    model.result("pg11").feature("line1").set("showsolutionparams", "on");
+    model.result("pg11").feature("line1").set("solvertype", "none");
+    model.result("pg11").feature("line1").set("showsolutionparams", "on");
+    model.result("pg11").feature("line1").set("solvertype", "none");
+    model.result("pg11").feature("line1").set("showsolutionparams", "on");
+    model.result("pg11").feature("line1").set("solvertype", "none");
+    model.result("pg11").feature("line1").set("showsolutionparams", "on");
+    model.result("pg11").feature("line1").set("solvertype", "none");
+    model.result("pg11").feature("line1").set("data", "parent");
+    model.result().dataset().create("rev3", "Revolve2D");
+    model.result().dataset("rev3").set("data", "dset1");
+    model.result().create("pg12", "PlotGroup3D");
+    model.result("pg12").label("\u7535\u52bf\uff0c\u56de\u8f6c\u51e0\u4f55 (els)");
+    model.result("pg12").set("data", "rev3");
+    model.result("pg12").setIndex("looplevel", 2, 0);
+    model.result("pg12").setIndex("looplevel", 2, 1);
+    model.result("pg12").set("solvertype", "none");
+    model.result("pg12").feature().create("surf1", "Surface");
+    model.result("pg12").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg12").feature("surf1").set("solvertype", "none");
+    model.result("pg12").feature("surf1").set("expr", "phis_wafer");
+    model.result("pg12").feature("surf1").set("colortable", "Rainbow");
+    model.result("pg12").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg12").feature("surf1").set("solvertype", "none");
+    model.result("pg12").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg12").feature("surf1").set("solvertype", "none");
+    model.result("pg12").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg12").feature("surf1").set("solvertype", "none");
+    model.result("pg12").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg12").feature("surf1").set("solvertype", "none");
+    model.result("pg12").feature("surf1").set("data", "parent");
+    model.result().dataset("dset1").set("geom", "geom1");
+    model.result().create("pg13", "PlotGroup2D");
+    model.result("pg13").label("\u901f\u5ea6 (spf)");
+    model.result("pg13").set("dataisaxisym", "off");
+    model.result("pg13").set("frametype", "spatial");
+    model.result("pg13").feature().create("surf1", "Surface");
+    model.result("pg13").feature("surf1").label("\u8868\u9762");
+    model.result("pg13").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg13").feature("surf1").set("expr", "spf.U");
+    model.result("pg13").feature("surf1").set("colortable", "Rainbow");
+    model.result("pg13").feature("surf1").set("smooth", "internal");
+    model.result("pg13").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg13").feature("surf1").set("data", "parent");
+    model.result().create("pg14", "PlotGroup2D");
+    model.result("pg14").label("\u538b\u529b (spf)");
+    model.result("pg14").set("dataisaxisym", "off");
+    model.result("pg14").set("frametype", "spatial");
+    model.result("pg14").feature().create("con1", "Contour");
+    model.result("pg14").feature("con1").label("\u7b49\u503c\u7ebf");
+    model.result("pg14").feature("con1").set("showsolutionparams", "on");
+    model.result("pg14").feature("con1").set("expr", "p");
+    model.result("pg14").feature("con1").set("number", 40);
+    model.result("pg14").feature("con1").set("levelrounding", false);
+    model.result("pg14").feature("con1").set("colortable", "Rainbow");
+    model.result("pg14").feature("con1").set("smooth", "internal");
+    model.result("pg14").feature("con1").set("showsolutionparams", "on");
+    model.result("pg14").feature("con1").set("data", "parent");
+    model.result().dataset("rev1").set("data", "dset1");
+    model.result().create("pg15", "PlotGroup3D");
+    model.result("pg15").label("\u4e09\u7ef4\u901f\u5ea6 (spf)");
+    model.result("pg15").set("frametype", "spatial");
+    model.result("pg15").feature().create("surf1", "Surface");
+    model.result("pg15").feature("surf1").label("\u8868\u9762");
+    model.result("pg15").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg15").feature("surf1").set("expr", "spf.U");
+    model.result("pg15").feature("surf1").set("colortable", "Rainbow");
+    model.result("pg15").feature("surf1").set("smooth", "internal");
+    model.result("pg15").feature("surf1").set("showsolutionparams", "on");
+    model.result("pg15").feature("surf1").set("data", "parent");
+    model.result("pg1").run();
+    model.result("pg2").run();
+    model.result().create("pg16", "PlotGroup2D");
+    model.result("pg16").run();
+    model.result("pg16").label("\u901f\u5ea6\u6d41\u7ebf");
+    model.result("pg16").create("str1", "Streamline");
+    model.result("pg16").feature("str1").set("expr", new String[]{"u", "w"});
+    model.result("pg16").feature("str1").set("descr", "\u901f\u5ea6\u573a");
+    model.result("pg16").feature("str1").selection().set(2);
+    model.result("pg16").run();
+    model.result().create("pg17", "PlotGroup1D");
+    model.result("pg17").run();
+    model.result("pg17").label("\u5c40\u90e8\u7535\u6d41\u5bc6\u5ea6");
+    model.result("pg17").create("lngr1", "LineGraph");
+    model.result("pg17").feature("lngr1").set("markerpos", "datapoints");
+    model.result("pg17").feature("lngr1").set("linewidth", "preference");
+    model.result("pg17").feature("lngr1").selection().named("sel1");
+    model.result("pg17").feature("lngr1").set("expr", "cd.iloc_er1");
+    model.result("pg17").feature("lngr1").set("descr", "\u5c40\u90e8\u7535\u6d41\u5bc6\u5ea6");
+    model.result("pg17").feature("lngr1").set("unit", "A/dm^2");
+    model.result("pg17").run();
+
+    model.title("\u65cb\u8f6c\u6676\u7247\u7535\u9540\u7684\u55b7\u6cc9\u6d41\u6548\u5e94");
+
+    model
+         .description("\u672c\u4f8b\u7814\u7a76\u5e26\u65cb\u8f6c\u6676\u7247\u7684\u7535\u6c60\u4e2d\u7684\u5bf9\u6d41\u6548\u5e94\u3002\u7535\u89e3\u6db2\u4ece\u7535\u6c60\u5e95\u90e8\u8fdb\u5165\uff0c\u6d41\u5411\u65cb\u8f6c\u6676\u7247\uff0c\u94dc\u5728\u6676\u7247\u4e0a\u53d1\u751f\u6c89\u79ef\u3002\u672c\u4f8b\u6c42\u89e3\u8584\u6676\u7247\u4e0a\u7684\u5c42\u6d41\u5206\u5e03\u3001\u94dc\u6d53\u5ea6\u3001\u7535\u89e3\u8d28\u7535\u4f4d\u548c\u7535\u52bf\u3002\n\n\u51e0\u4f55\u4e3a\u4e8c\u7ef4\u8f74\u5bf9\u79f0\u7ed3\u6784\u3002\n\n\u6b64\u6a21\u578b\u9700\u8981\u201c\u7535\u9540\u6a21\u5757\u201d\u548c\u201cCFD \u6a21\u5757\u201d\u3002");
+
+    model.mesh().clearMeshes();
+
+    model.sol("sol1").clearSolutionData();
+    model.sol("sol2").clearSolutionData();
+
+    model.label("fountain_flow.mph");
+
+    return model;
+  }
+
+  public static void main(String[] args) {
+    run();
+  }
+
+}

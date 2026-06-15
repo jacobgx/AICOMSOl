@@ -1,0 +1,600 @@
+======================================================================
+COMSOL Java API 快速参考（增强版）
+格式: // 说明
+      model.xxx().yyy()... — 代码模式
+
+来源: 官方 PDF + 已验证模型代码（HeatExchangerTopo, ChannelFlow, CylinderFlow）
+======================================================================
+
+
+──────────────────────────────────────────────────
+  Model
+──────────────────────────────────────────────────
+
+  // 创建新模型
+  ModelUtil.create("tag")
+
+  // 设置工作路径
+  model.modelPath("path")
+
+  // 设置保存文件名
+  model.label("filename.mph")
+
+  // 保存模型
+  model.save("filename")
+
+  // 设置模型的显示标题
+  model.title("中文标题")
+
+  // 设置描述文本
+  model.description("中文描述")
+
+  // 创建组件
+  model.component().create("comp1", true)
+
+
+──────────────────────────────────────────────────
+  Component → Geometry
+──────────────────────────────────────────────────
+
+  // 创建2D几何
+  model.component("comp1").geom().create("geom1", 2)
+
+  // 创建3D几何
+  model.component("comp1").geom().create("geom1", 3)
+
+  // 矩形
+  model.component("comp1").geom("geom1").create("r1", "Rectangle")
+
+  // 正方形
+  model.component("comp1").geom("geom1").create("sq1", "Square")
+
+  // 圆形
+  model.component("comp1").geom("geom1").create("c1", "Circle")
+
+  // 圆柱体
+  model.component("comp1").geom("geom1").create("cyl1", "Cylinder")
+
+  // 长方体
+  model.component("comp1").geom("geom1").create("blk1", "Block")
+
+  // 球体
+  model.component("comp1").geom("geom1").create("sph1", "Sphere")
+
+  // 设置尺寸（Java String 数组）
+  model.component("comp1").geom("geom1").feature("r1").set("size", new String[]{"L", "H"})
+
+  // 设置位置
+  model.component("comp1").geom("geom1").feature("r1").set("pos", new String[]{"x", "y"})
+
+  // 设置圆形半径
+  model.component("comp1").geom("geom1").feature("c1").set("r", "R")
+
+  // 复制特征
+  model.component("comp1").geom("geom1").feature().duplicate("sq2", "sq1")
+
+  // 构建单个特征
+  model.component("comp1").geom("geom1").run("r1")
+
+  // 最终构建（布尔运算前）
+  model.component("comp1").geom("geom1").run("fin")
+
+  // 运行全部几何
+  model.component("comp1").geom("geom1").run()
+
+  // 轴对称
+  model.component("comp1").geom("geom1").axisymmetric(true)
+
+  // 设置长度单位
+  model.component("comp1").geom("geom1").lengthUnit("cm")
+
+  // 布尔差集（减操作）—— 注意 selection("input") / selection("input2")
+  model.component("comp1").geom("geom1").create("dif1", "Difference")
+  model.component("comp1").geom("geom1").feature("dif1").selection("input").set("r1")
+  model.component("comp1").geom("geom1").feature("dif1").selection("input2").set("c1")
+
+  // 布尔并集
+  .create("uni1", "Union")
+
+  // 布尔交集
+  .create("int1", "Intersection")
+
+
+──────────────────────────────────────────────────
+  Component → Selection
+──────────────────────────────────────────────────
+
+  // 创建命名选择
+  model.component("comp1").selection().create("sel1", "Explicit")
+
+  // 指定边界编号（Java int 数组）
+  model.component("comp1").selection("sel1").set(new int[]{1, 2, 3})
+
+  // 给选择命名
+  model.component("comp1").selection("sel1").label("标签")
+
+  // 引用命名选择
+  model.component("comp1").selection("sel1").named("sel_name")
+
+  // 按几何类型选择
+  .geom("geom1", 2, 1, {"exterior"})
+
+  // 坐标框选（⚠️ 类型名是 "Box"，不是 "BoxSelection"）
+  model.component("comp1").selection().create("sel_left", "Box")
+  model.component("comp1").selection("sel_left").set("entitydim", 1)  // 1=边界
+  model.component("comp1").selection("sel_left").set("xmin", "-0.5")
+  model.component("comp1").selection("sel_left").set("xmax", "0.5")
+  model.component("comp1").selection("sel_left").set("ymin", "0.5")
+  model.component("comp1").selection("sel_left").set("ymax", "5.5")
+  // 应用时引用命名选择
+  .selection().named("sel_left")
+
+  // 选择类型
+  Explicit — 显式选择（按编号）
+  Box — 坐标框选（不受布尔操作后编号变化影响）
+  Complement — 补集选择
+
+
+──────────────────────────────────────────────────
+  Component → Physics
+──────────────────────────────────────────────────
+
+  // 静电
+  model.component("comp1").physics().create("es", "Electrostatics", "geom1")
+
+  // 电流
+  model.component("comp1").physics().create("ec", "ElectricCurrents", "geom1")
+
+  // 磁场
+  model.component("comp1").physics().create("mf", "MagneticFields", "geom1")
+
+  // 传热（固体+流体通用）
+  model.component("comp1").physics().create("ht", "HeatTransfer", "geom1")
+
+  // 流体传热（含对流项）
+  model.component("comp1").physics().create("ht", "HeatTransferInFluids", "geom1")
+
+  // 固体力学
+  model.component("comp1").physics().create("solid", "SolidMechanics", "geom1")
+
+  // 层流
+  model.component("comp1").physics().create("spf", "LaminarFlow", "geom1")
+
+  // 接地边界（dim=2 表示边界）
+  model.component("comp1").physics("es").create("gnd1", "Ground", 2)
+
+  // 终端边界
+  model.component("comp1").physics("es").create("term1", "Terminal", 2)
+
+  // 域条件（dim=3 表示域）
+  model.component("comp1").physics("es").create("ccns1", "ChargeConservationSolid", 3)
+
+  // 入口边界（dim=1 表示边界）
+  model.component("comp1").physics("spf").create("inl1", "InletBoundary", 1)
+
+  // 出口边界
+  model.component("comp1").physics("spf").create("out1", "OutletBoundary", 1)
+
+  // 体积力（dim=2 表示域）
+  model.component("comp1").physics("spf").create("vf1", "VolumeForce", 2)
+
+  // 温度边界
+  model.component("comp1").physics("ht").create("temp1", "TemperatureBoundary", 1)
+
+  // 热通量边界
+  model.component("comp1").physics("ht").create("hf1", "HeatFluxBoundary", 1)
+
+  // 对流流出边界
+  model.component("comp1").physics("ht").create("ofl1", "ConvectiveOutflow", 1)
+
+  // 流入边界
+  model.component("comp1").physics("ht").create("ifl1", "Inflow", 1)
+
+  // 流体传热模型（域条件）
+  model.component("comp1").physics("ht").create("fluid1", "FluidHeatTransferModel", 2)
+
+  // 热源（域条件）
+  model.component("comp1").physics("ht").create("hs1", "HeatSource", 2)
+
+  // 设置入口流速
+  .feature("inl1").set("U0in", "1[m/s]")
+
+  // 设置压力入口
+  .feature("inl1").set("BoundaryCondition", "Pressure")
+  .feature("inl1").set("p0", "1")
+
+  // 设置出口压力
+  .feature("out1").set("p0", "0[Pa]")
+
+  // 设置温度值
+  .feature("temp1").set("T0", "273.15[K]")
+
+  // 体积力分量
+  .feature("vf1").set("F", new String[]{"-alpha*u", "-alpha*v", "0"})
+
+  // 用户自定义密度
+  .feature("fp1").set("rho_mat", "userdef")
+  .feature("fp1").set("rho", 1)
+
+  // 用户自定义粘度
+  .feature("fp1").set("mu_mat", "userdef")
+  .feature("fp1").set("mu", "1/Re")
+
+  // 用户自定义导热系数（各向同性=标量，各向异性=9分量数组）
+  .feature("fluid1").set("k_mat", "userdef")
+  .feature("fluid1").set("k", new int[]{1, 0, 0, 0, 1, 0, 0, 0, 1})
+
+  // 用户自定义热容
+  .feature("fluid1").set("Cp_mat", "userdef")
+  .feature("fluid1").set("Cp", "Re*Pr")
+
+  // 手动指定速度场（替代 NonIsothermalFlow 自动耦合）
+  .feature("fluid1").set("u_src", "root.comp1.u")
+
+  // 热源表达式
+  .feature("hs1").set("Q0", "Q0")
+
+  // 初始温度
+  .feature("init1").set("T", "T_in")
+
+  // 伪时间步进（改善非线性收敛）
+  .prop("AdvancedSettingProperty").set("UsePseudoTime", "1")
+
+  // 物理模型属性
+  .prop("PhysicalModelProperty").set("Compressibility", "Incompressible")
+
+
+──────────────────────────────────────────────────
+  Component → Multiphysics (多物理场耦合)
+──────────────────────────────────────────────────
+
+  // 非等温流动耦合（spf ↔ ht）
+  model.component("comp1").multiphysics().create("mp1", "NonIsothermalFlow")
+
+  // 注意：NonIsothermalFlow 会自动设置 ht 中的 u_src。
+  // 如果用户自定义了密度（rho_mat="userdef"），rho 变量未定义，
+  // 需手动设置 ht 的 u_src = "root.comp1.u" 替代自动耦合。
+
+
+──────────────────────────────────────────────────
+  Component → Variables (用户定义变量)
+──────────────────────────────────────────────────
+
+  // 创建变量组
+  model.component("comp1").variable().create("var1")
+
+  // 定义变量（支持数学表达式）
+  model.component("comp1").variable("var1").set("alpha_max", "(1+1/Re)/Da")
+  model.component("comp1").variable("var1").set("alpha", "alpha_max*dtopo1.theta_p")
+  model.component("comp1").variable("var1").set("Q0", "(1-dtopo1.theta)*bata*(1-T)")
+
+  // 目标函数变量
+  model.component("comp1").variable().create("var2")
+  model.component("comp1").variable("var2").set("Jth", "intop2(Q0)")
+  model.component("comp1").variable("var2").set("Jf", "intop2(spf.Qvd+alpha*(u^2+v^2))")
+  model.component("comp1").variable("var2").set("obj", "-w1*Jth+w2*Jf")
+
+
+──────────────────────────────────────────────────
+  Component → Coupling Operators (耦合算子)
+──────────────────────────────────────────────────
+
+  // 积分算子（用于目标函数/约束）
+  model.component("comp1").cpl().create("intop2", "Integration")
+  model.component("comp1").cpl("intop2").selection().set(new int[]{2})
+
+  // 在表达式中使用：intop2(expr)
+
+
+──────────────────────────────────────────────────
+  Component → Topology Optimization (拓扑优化)
+──────────────────────────────────────────────────
+
+  // ⚠️ 重要：DensityTopology 在 common() 下创建，非 physics()
+  model.component("comp1").common().create("dtopo1", "DensityTopology")
+
+  // 选择设计域
+  model.component("comp1").common("dtopo1").selection().set(2)
+
+  // 设置投影类型（TanhProjection / HyperbolicProjection）
+  model.component("comp1").common("dtopo1").set("projectionType", "TanhProjection")
+
+  // 设置插值类型（Darcy / SIMP / RAMP / Linear）
+  model.component("comp1").common("dtopo1").set("interpolationType", "Darcy")
+
+  // COMSOL 约定：theta=1 → 固体，theta=0 → 流体
+  // dtopo1.theta — 设计变量（经 Helmholtz 滤波后）
+  // dtopo1.theta_p — 经投影+插值后的物理变量
+
+  // Brinkman 惩罚（Darcy 插值自动生成 theta_p）
+  // alpha_max = (1+1/Re)/Da
+  // alpha = alpha_max * dtopo1.theta_p
+  // theta_p≈1（固体）→ alpha≈alpha_max（高阻尼）
+  // theta_p≈0（流体）→ alpha≈0（无阻尼）
+
+  // 热源（仅流体加热）
+  // Q0 = (1-dtopo1.theta) * bata * (1-T)
+  // theta=0（流体）→ Q0 = bata*(1-T)（加热）
+  // theta=1（固体）→ Q0 = 0（不加热）
+
+  // 目标函数模式
+  // Jth = intop2(Q0)              // 热源积分（最大化→更好换热）
+  // Jf  = intop2(spf.Qvd+alpha*U^2) // 流阻积分（最小化→更低流阻）
+  // obj = -w1*Jth + w2*Jf         // 最小化=最大化换热+最小化流阻
+
+
+──────────────────────────────────────────────────
+  Component → Material
+──────────────────────────────────────────────────
+
+  // 创建材料
+  model.component("comp1").material().create("mat1", "Common")
+
+  // 材料标签
+  model.component("comp1").material("mat1").label("Water")
+
+  // 材料应用到域（Java int 数组）
+  model.component("comp1").material("mat1").selection().set(new int[]{2})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("density", new String[]{"1000[kg/m^3]"})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("dynamicviscosity", new String[]{"1e-3[Pa*s]"})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("thermalconductivity", new String[]{"0.0257[W/(m*K)]"})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("heatcapacity", new String[]{"1007[J/(kg*K)]"})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("relpermittivity", new String[]{"4.2"})
+
+  model.component("comp1").material("mat1").propertyGroup("def").set("electricconductivity", new String[]{"5.998e7[S/m]"})
+
+
+──────────────────────────────────────────────────
+  Component → Mesh
+──────────────────────────────────────────────────
+
+  // 物理场控制网格（三步，COMSOL 自动建 FreeTri）
+  model.component("comp1").mesh().create("mesh1")
+  model.component("comp1").mesh("mesh1").autoMeshSize(5)  // 5=常规, 4=细, 1=极细
+  model.component("comp1").mesh("mesh1").run()
+
+  // 如需手动 FreeTri（仅在需要子节点局部控制时）
+  model.component("comp1").mesh("mesh1").create("ftri1", "FreeTri")
+
+  // 自定义网格尺寸
+  model.component("comp1").mesh("mesh1").feature("size").set("custom", true)
+  model.component("comp1").mesh("mesh1").feature("size").set("hgrad", 1.1)
+
+  // 局部尺寸（FreeTri 子节点）
+  model.component("comp1").mesh("mesh1").feature("ftri1").create("size1", "Size")
+  model.component("comp1").mesh("mesh1").feature("ftri1").feature("size1").set("custom", true)
+  model.component("comp1").mesh("mesh1").feature("ftri1").feature("size1").selection().geom("geom1", 2)
+  model.component("comp1").mesh("mesh1").feature("ftri1").feature("size1").selection().set(new int[]{2})
+  model.component("comp1").mesh("mesh1").feature("ftri1").feature("size1").set("hmaxactive", true)
+  model.component("comp1").mesh("mesh1").feature("ftri1").feature("size1").set("hmax", 0.1)
+
+  // 生成网格
+  model.component("comp1").mesh("mesh1").run()
+
+  // 贡献网格
+  model.component("comp1").mesh("mesh1").contribute("geom/detail", true)
+
+
+──────────────────────────────────────────────────
+  Study & Solver (研究 & 求解器)
+──────────────────────────────────────────────────
+
+  // 创建研究
+  model.study().create("std1")
+
+  // 稳态求解
+  model.study("std1").create("stat", "Stationary")
+
+  // 瞬态求解
+  model.study("std1").create("time", "Transient")
+
+  // 频域求解
+  model.study("std1").create("freq", "FrequencyDomain")
+
+  // 指定求解物理场
+  model.study("std1").feature("stat").setSolveFor("/physics/spf", true)
+  model.study("std1").feature("stat").setSolveFor("/physics/ht", true)
+
+  // 自动创建求解器序列
+  model.study("std1").createAutoSequences("all")
+
+  // 不自动生成默认绘图
+  model.study("std1").setGenPlots(false)
+
+  // 运行全部求解
+  model.sol("sol1").runAll()
+
+  // 瞬态时间步
+  model.study("std1").feature("time").set("tlist", "range(0,0.1,10)")
+
+
+──────────────────────────────────────────────────
+  Study → Topology Optimization (拓扑优化研究)
+──────────────────────────────────────────────────
+
+  // 创建拓扑优化研究步骤
+  model.study("std1").create("topo", "TopologyOptimization")
+
+  // 优化求解器（snopt / mma / ipopt）
+  model.study("std1").feature("topo").set("optsolver", "snopt")
+
+  // SNOPT 最大迭代
+  model.study("std1").feature("topo").set("snoptmaxiter", 150)
+
+  // 优化容差
+  model.study("std1").feature("topo").set("opttolinner", "1e-2")
+
+  // 目标函数（setIndex 用于多目标时指定索引）
+  model.study("std1").feature("topo").setIndex("optobj", "comp1.obj", 0)
+  model.study("std1").feature("topo").set("objectivetype", "minimization")
+
+  // 约束表达式（体积约束）
+  model.study("std1").feature("topo").set("constraintExpression",
+      new String[]{"comp1.dtopo1.theta_avg"})
+  model.study("std1").feature("topo").setIndex("constraintLbound", 0.5, 0)
+  model.study("std1").feature("topo").setIndex("constraintUbound", 0.5, 0)
+
+  // 关闭优化过程绘图
+  model.study("std1").feature("topo").set("plot", false)
+
+  // ⚠️ spf+ht 耦合拓扑优化 batch 模式矩阵分解失败，需 Desktop GUI 运行
+
+  // 稳态步骤高级设置（避免重复求解）
+  model.study("std1").feature("stat").set("notlistsolnum", 1)
+  model.study("std1").feature("stat").set("notsolnum", "auto")
+  model.study("std1").feature("stat").set("listsolnum", 1)
+  model.study("std1").feature("stat").set("solnum", "auto")
+
+
+──────────────────────────────────────────────────
+  Results & Postprocessing
+──────────────────────────────────────────────────
+
+  // 创建2D绘图组
+  model.result().create("pg1", "PlotGroup2D")
+
+  // 创建3D绘图组
+  model.result().create("pg1", "PlotGroup3D")
+
+  // 创建1D绘图组
+  model.result().create("pg1", "PlotGroup1D")
+
+  // 绘图组标签
+  model.result("pg1").label("中文标题")
+
+  // 表面图（云图）
+  model.result("pg1").feature().create("surf1", "Surface")
+
+  // 表达式：速度大小
+  model.result("pg1").feature("surf1").set("expr", "spf.U")
+
+  // 表达式：温度
+  model.result("pg1").feature("surf1").set("expr", "T")
+
+  // 表达式：拓扑设计变量
+  model.result("pg1").feature("surf1").set("expr", "dtopo1.theta")
+
+  // 表达式：压力
+  model.result("pg1").feature("surf1").set("expr", "p")
+
+  // 单位
+  model.result("pg1").feature("surf1").set("unit", "degC")
+
+  // 配色
+  model.result("pg1").feature("surf1").set("colortable", "RainbowLight")
+  model.result("pg1").feature("surf1").set("colortable", "ThermalLight")
+  model.result("pg1").feature("surf1").set("colortable", "GrayScale")
+
+  // 平滑
+  model.result("pg1").feature("surf1").set("smooth", "internal")
+
+  // 流线（注意小写l）
+  model.result("pg1").create("str1", "Streamline")
+
+  // 流线表达式
+  model.result("pg1").feature("str1").set("expr", new String[]{"u", "v"})
+
+  // 流线样式
+  model.result("pg1").feature("str1").set("coloring", "uniform")
+  model.result("pg1").feature("str1").set("color", "black")
+  model.result("pg1").feature("str1").set("linewidth", "1")
+
+  // 等值线
+  model.result("pg1").create("con1", "Contour")
+
+  // 渲染绘图
+  model.result("pg1").run()
+
+  // 创建数据集
+  model.result().dataset().create("dset2", "Solution")
+
+  // 指定数据集几何
+  model.result().dataset("dset1").set("geom", "geom1")
+
+  // 全局计算
+  model.result().numerical().create("gev1", "EvalGlobal")
+
+  // 点计算
+  model.result().numerical("pev1").set("data", "cpt1")
+
+  // 结果表
+  model.result().table().create("tbl1", "Table")
+  model.result().numerical("gev1").set("table", "tbl1")
+
+  // 图片导出
+  model.result().export().create("img1", "Image")
+  model.result().export("img1").set("plotgroup", "pg1")
+  model.result().export("img1").set("filename", "path.png")
+  model.result().export("img1").set("width", 1600)
+  model.result().export("img1").set("height", 600)
+  model.result().export("img1").set("antialias", "on")
+  model.result().export("img1").run()
+
+  // 动画导出
+  model.result().export().create("anim1", "Animation")
+  model.result().export("anim1").showFrame()
+
+  // 帧类型
+  model.result("pg1").set("frametype", "spatial")
+
+
+──────────────────────────────────────────────────
+  Parameters & Functions
+──────────────────────────────────────────────────
+
+  // 定义参数（格式: "值[单位]"）
+  model.param().set("name", "value[unit]")
+
+  // 参数说明
+  model.param().descr("name", "description")
+
+  // 创建阶跃函数
+  model.func().create("step1", "Step")
+
+  // 设置阶跃位置
+  model.func("step1").set("location", 0.05)
+
+
+──────────────────────────────────────────────────
+  物理场选择维度参考
+──────────────────────────────────────────────────
+
+  // dim=1 → 边界（Boundary）
+  // dim=2 → 域（Domain）
+  // dim=3 → 全局（Global，仅在部分物理场中）
+
+  // 示例：
+  model.component("comp1").physics("spf").create("inl1", "InletBoundary", 1)  // 边界
+  model.component("comp1").physics("spf").create("vf1", "VolumeForce", 2)      // 域
+  model.component("comp1").physics("ht").create("fluid1", "FluidHeatTransferModel", 2)  // 域
+
+
+──────────────────────────────────────────────────
+  Java 语法注意事项
+──────────────────────────────────────────────────
+
+  // 1. 选择边界的 set() 需要 Java int 数组
+  .selection().set(new int[]{1})           // ✓ 正确
+  .selection().set(1)                      // ✗ 编译错误
+
+  // 2. 字符串数组用 String[]
+  .set("size", new String[]{"L", "H"})     // ✓ 正确
+  .set("size", {"L", "H"})                 // ✗ 编译错误（Java 不支持）
+
+  // 3. 表达式字符串用引号包裹含单位的量
+  .set("U0in", "1[m/s]")                   // ✓ 带单位
+  model.param().set("Re", "150")           // ✓ 纯数字（无单位）
+
+  // 4. 多物理场 setSolveFor 的路径格式
+  .setSolveFor("/physics/spf", true)       // ✓ 正确
+  .setSolveFor("spf", true)                // ✗ 路径不完整
+
+  // 5. 变量引用路径
+  "root.comp1.u"                           // 跨组件引用速度场
+  "comp1.dtopo1.theta"                     // 本组件内引用
+  "comp1.obj"                              // 引用目标函数

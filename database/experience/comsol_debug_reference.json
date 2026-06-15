@@ -1,0 +1,238 @@
+{
+ "title": "COMSOL 调试经验参考（网络检索汇总）",
+ "sources": [
+  "COMSOL Knowledge Base 103 — Improving Convergence of Nonlinear Stationary Models",
+  "COMSOL Knowledge Base 964 — Failed to Find a Solution / Returned Solution is Not Converged",
+  "COMSOL Knowledge Base 1193 — Maximum Number of Linear Iterations Reached",
+  "COMSOL Knowledge Base 1240 — Manually Setting the Scaling of Variables",
+  "COMSOL Knowledge Base 1258 — Fully Coupled vs. Segregated & Direct vs. Iterative Solvers",
+  "COMSOL Knowledge Base 1260 — What to Do When a Linear Stationary Model Is Not Solving",
+  "COMSOL Knowledge Base 1262 — Improving Convergence of Transient Models",
+  "COMSOL Knowledge Base 1267 — Solving Complicated Models",
+  "COMSOL Knowledge Base 1030 — Out of Memory During LU Factorization",
+  "COMSOL Knowledge Base 1127 — Improving Convergence in Nonlinear Time-Dependent Models",
+  "COMSOL Forum #352482 — Topology Optimization COMSOL 6.3 vs 5.6 (Kristian Jensen, Optimization PM)",
+  "COMSOL Forum #367421 — Optimization Solver Failure (Heat Transfer + Microchannel)"
+ ],
+ "kb_articles": [
+  {
+   "kb": 103,
+   "title": "Improving Convergence of Nonlinear Stationary Models",
+   "url": "https://www.comsol.com/support/knowledgebase/103",
+   "key_points": [
+    "提供更好的初始值 — 先用简化模型求解作为复杂模型的初值",
+    "逐步求解 — 多物理场先解单场，再逐步耦合",
+    "确保边界条件一致性 — 相邻边界的不相容 BC 会产生奇异性",
+    "加密网格 — 在梯度大的区域（边界层、激波、反应前沿）",
+    "添加人工扩散 — 对流主导问题时开启（流体传热默认已开启）",
+    "手动设置变量缩放 — 变量值接近零时自动缩放可能失效",
+    "转为瞬态求解 — 稳态不收敛时用瞬态趋近稳态",
+    "使用参数延拓法 — 从容易收敛的参数值逐步 ramp 到目标值",
+    "使用 residual 算子 — 绘制代数残差空间分布，定位发散区域"
+   ]
+  },
+  {
+   "kb": 964,
+   "title": "Failed to Find a Solution / Returned Solution is Not Converged",
+   "url": "https://www.comsol.com/support/knowledgebase/964",
+   "key_points": [
+    "病态刚度矩阵 — 物理公式问题、高宽高比几何、不一致的边界条件",
+    "高度非线性模型 — 建议通过参数化求解器逐步增加非线性",
+    "无稳态解 — 用时变研究诊断",
+    "网格过粗 — 在陡梯度区域局部加密",
+    "关闭误差控制 — Direct 求解器中设置 Check error estimate = No（谨慎使用）",
+    "不一致的边界条件/初始猜测 — 验证设置"
+   ]
+  },
+  {
+   "kb": 1193,
+   "title": "Maximum Number of Linear Iterations Reached",
+   "url": "https://www.comsol.com/support/knowledgebase/1193",
+   "key_points": [
+    "增加线性迭代次数限制",
+    "切换到更强的预条件器",
+    "使用 Direct 线性求解器（PARDISO/MUMPS）替代 Iterative"
+   ]
+  },
+  {
+   "kb": 1240,
+   "title": "Manually Setting the Scaling of Variables",
+   "url": "https://www.comsol.com/support/knowledgebase/1240",
+   "key_points": [
+    "当解分量接近零时，自动缩放可能失效",
+    "设置路径：Study → Solver Configurations → Dependent Variables → Scale",
+    "每个因变量可独立设置缩放因子"
+   ]
+  },
+  {
+   "kb": 1258,
+   "title": "Fully Coupled vs. Segregated & Direct vs. Iterative Solvers",
+   "url": "https://www.comsol.com/support/knowledgebase/1258",
+   "key_points": [
+    "Fully Coupled 通常需要 Direct 线性求解器",
+    "Segregated 内存效率更高但可能收敛更慢",
+    "一种方法失败时尝试另一种",
+    "Iterative 求解器选项：FGMRES、GMRES、BiCGStab"
+   ]
+  },
+  {
+   "kb": 1262,
+   "title": "Improving Convergence of Transient Models",
+   "url": "https://www.comsol.com/support/knowledgebase/1262",
+   "key_points": [
+    "网格细化研究（KB 1261）— 粗网格迫使求解器用极小时间步",
+    "收紧相对容差（如 1e-3 → 1e-4）反而可能加速求解",
+    "使用 Events 接口处理瞬时变化的载荷/边界条件",
+    "一致的初始化 — BC 与初始值冲突时求解器会采取极小步长（见 KB 1172）",
+    "手动设置初始时间步 — Time-Dependent Solver → Time Stepping → Initial step"
+   ]
+  },
+  {
+   "kb": 1127,
+   "title": "Improving Convergence in Nonlinear Time-Dependent Models",
+   "url": "https://www.comsol.com/support/knowledgebase/1127",
+   "key_points": [
+    "降低最小阻尼因子",
+    "收紧非线性容差",
+    "使用参数延拓法"
+   ]
+  },
+  {
+   "kb": 1260,
+   "title": "What to Do When a Linear Stationary Model Is Not Solving",
+   "url": "https://www.comsol.com/support/knowledgebase/1260",
+   "key_points": [
+    "检查边界条件是否完全约束",
+    "检查材料属性是否为零",
+    "检查几何是否包含不连通的域"
+   ]
+  }
+ ],
+ "solver_log_guide": {
+  "description": "Solver Log 关键列含义与对策",
+  "columns": {
+   "NLfail": {
+    "meaning": "非线性求解（牛顿迭代）失败次数",
+    "action": "增加牛顿迭代次数、降低阻尼因子、改善初始值、使用参数延拓"
+   },
+   "LinErr": {
+    "meaning": "线性求解器误差估计",
+    "action": "切换到 Direct 求解器（PARDISO/MUMPS）、更换预条件器"
+   },
+   "LinRes": {
+    "meaning": "线性求解器残差",
+    "action": "同 LinErr，残差持续不下降表明线性系统病态"
+   },
+   "Tfail": {
+    "meaning": "瞬态时间步进失败",
+    "action": "手动减小初始时间步长、检查 BC 一致性、加密网格"
+   }
+  },
+  "convergence_plot_diagnosis": {
+   "error_trending_down_slowly": "增加牛顿迭代次数",
+   "error_oscillating": "降低阻尼因子",
+   "error_flat": "检查变量缩放和初始值",
+   "error_diverging_rapidly": "检查物理场设置、边界条件一致性"
+  }
+ },
+ "common_mistakes": [
+  {
+   "id": 1,
+   "category": "语法错误",
+   "mistake": "混用 legacy 语法 (model.physics()) 和 component 语法",
+   "symptom": "物理场附加到错误的作用域",
+   "fix": "统一使用 component 语法: model.component(\"comp1\").physics().create(...)"
+  },
+  {
+   "id": 2,
+   "category": "语法错误",
+   "mistake": "向 .set() 传递数值类型而非字符串",
+   "symptom": "静默失败或模型损坏",
+   "fix": "所有数值参数必须用 String 传递: new String[]{\"0.1\", \"0.05\"}"
+  },
+  {
+   "id": 3,
+   "category": "语法错误",
+   "mistake": "物理场构造函数名拼写错误",
+   "symptom": "IllegalArgumentException 或静默跳过",
+   "fix": "在 GUI 中创建对应物理场 → 另存为 Java 文件 → 复制构造函数名"
+  },
+  {
+   "id": 4,
+   "category": "语法错误",
+   "mistake": "几何标签与 physics.create() 中的不匹配",
+   "symptom": "NullPointerException",
+   "fix": "确保 physics.create() 的第3个参数与 geometry 标签完全一致"
+  },
+  {
+   "id": 5,
+   "category": "表达式错误",
+   "mistake": "空间变量大小写错误（X 代替 x）",
+   "symptom": "求解时 \"Undefined variable\"，无语法错误提示",
+   "fix": "COMSOL 内置空间变量 x, y, z 始终小写"
+  },
+  {
+   "id": 6,
+   "category": "顺序错误",
+   "mistake": "在节点创建前访问节点",
+   "symptom": "NullPointerException",
+   "fix": "严格按顺序：component → geometry → physics → mesh → study → solver"
+  },
+  {
+   "id": 7,
+   "category": "几何错误",
+   "mistake": "未调用 .run() 或 .run(\"fin\") 就进行网格划分",
+   "symptom": "网格生成失败",
+   "fix": "在 meshing 前确保几何已完成构建"
+  },
+  {
+   "id": 8,
+   "category": "选择错误",
+   "mistake": "边界选择用裸 int 而非 int 数组",
+   "symptom": "Java 编译错误",
+   "fix": "使用 new int[]{1} 而非 1"
+  },
+  {
+   "id": 9,
+   "category": "路径错误",
+   "mistake": "setSolveFor 路径格式错误",
+   "symptom": "求解器不求解该物理场",
+   "fix": "格式必须为 \"/physics/spf\"（以 / 开头，小写 physics）"
+  }
+ ],
+ "convergence_checklist": {
+  "level_1_physics": [
+   "边界条件是否互相冲突？",
+   "初始值与边界条件是否一致？",
+   "材料参数是否有零值/负值/不合理极端值？",
+   "域选择是否正确（流体域 ≠ 固体域）？"
+  ],
+  "level_2_solver_log": [
+   "查看 NLfail 列 → 非线性收敛问题",
+   "查看 LinErr/LinRes 列 → 线性求解器问题",
+   "查看 Tfail 列 → 瞬态步进问题",
+   "查看收敛图趋势（下降/振荡/平坦/发散）"
+  ],
+  "level_3_convergence": [
+   "改善初始值",
+   "逐步求解（先单场后耦合）",
+   "加密梯度大的区域",
+   "添加人工扩散",
+   "手动设置变量缩放",
+   "转为瞬态求解",
+   "参数延拓法",
+   "切换 Fully Coupled ↔ Segregated"
+  ]
+ },
+ "gui_first_approach": {
+  "principle": "获取正确 API 调用的最可靠方法",
+  "steps": [
+   "1. 在 COMSOL Desktop GUI 中手动搭建模型",
+   "2. File → Save As → Model File for Java (.java)",
+   "3. 打开生成的 Java 文件，复制构造函数名、属性名、模型结构",
+   "4. 以此为基础修改参数",
+   "5. 这消除了所有构造函数名猜测和标签不匹配问题"
+  ]
+ },
+ "common_mistakes_count": 9
+}

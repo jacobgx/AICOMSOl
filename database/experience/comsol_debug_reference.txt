@@ -1,0 +1,158 @@
+======================================================================
+COMSOL 调试经验参考手册（网络检索汇总）
+来源: COMSOL 官方知识库 + 用户论坛
+======================================================================
+
+参考资料:
+  - KB 103: Improving Convergence of Nonlinear Stationary Models
+  - KB 964: Failed to Find a Solution
+  - KB 1193: Maximum Number of Linear Iterations Reached
+  - KB 1240: Manually Setting the Scaling of Variables
+  - KB 1258: Fully Coupled vs. Segregated & Direct vs. Iterative
+  - KB 1260: What to Do When a Linear Stationary Model Is Not Solving
+  - KB 1262: Improving Convergence of Transient Models
+  - KB 1127: Improving Convergence in Nonlinear Time-Dependent Models
+  - Forum #352482: Topology Optimization COMSOL 6.3 vs 5.6
+     (Kristian Jensen, COMSOL Optimization Technical Product Manager)
+
+所有 KB 文章可在 https://www.comsol.com/support/knowledgebase/<编号> 查看
+
+
+======================================================================
+一、12 个常见错误与修复
+======================================================================
+
+  【语法错误】
+
+  1. 混用 legacy 和 component 语法
+     错误: model.physics().create(...) 与 model.component("comp1").xxx() 混用
+     修复: 统一使用 component 语法
+
+  2. 向 .set() 传递数值而非字符串
+     错误: .set("size", new double[]{0.1, 0.05})
+     修复: .set("size", new String[]{"0.1", "0.05"})
+
+  3. 物理场构造函数名拼写错误
+     错误: .create("ht", "Heat_Transfer", "geom1")
+     修复: 在 GUI 中创建再导出 Java，复制构造函数名
+
+  4. 几何标签不匹配
+     错误: physics.create("ht", "HeatTransfer", "geom2") 但几何是 "geom1"
+     修复: 确保标签完全一致
+
+  5. 空间变量大小写错误
+     错误: "100*(X^2 + Y^2)"  — X, Y 大写
+     修复: "100*(x^2 + y^2)"  — COMSOL 内置变量 x,y,z 始终小写
+
+  【顺序与结构错误】
+
+  6. 节点创建前访问
+     错误: 先调用 model.component("comp1").physics("spf") 再 create
+     修复: 严格按 component → geometry → physics → mesh → study 顺序
+
+  7. 几何未构建就剖网格
+     修复: mesh.run() 前确保 geom.run() 或 geom.run("fin") 已执行
+
+  8. 边界选择用裸 int 而非数组
+     错误: .selection().set(1)
+     修复: .selection().set(new int[]{1})
+
+  9. setSolveFor 路径格式错误
+     错误: .setSolveFor("spf", true)
+     修复: .setSolveFor("/physics/spf", true)
+
+
+======================================================================
+二、Solver Log 解读速查
+======================================================================
+
+  列名      含义                    对策
+  ─────────────────────────────────────────────────────────────
+  NLfail    牛顿迭代失败次数         ↑牛顿迭代次数 / ↓阻尼因子 /
+                                     改善初始值 / 参数延拓
+  LinErr    线性求解器误差估计      → Direct 求解器 (PARDISO/MUMPS) /
+                                     换预条件器
+  LinRes    线性求解器残差          同 LinErr
+  Tfail     瞬态步进失败            ↓初始时间步 / 查 BC 一致性 / 加密网格
+
+  收敛图诊断:
+    误差缓慢下降 → 增加牛顿迭代次数
+    误差振荡     → 降低阻尼因子
+    误差平坦     → 检查变量缩放和初始值
+    误差快速发散 → 检查物理场设置和 BC 一致性
+
+
+======================================================================
+三、收敛性问题四级排查流程
+======================================================================
+
+  【第一级：物理场一致性】
+
+  □ 边界条件是否互相冲突（如相邻边界同时设温度+热通量）
+  □ 初始值与边界条件是否矛盾（如初始 T=0 但入口 T=100）
+  □ 材料参数是否有零值、负值或不合理的极端值
+  □ 域选择是否正确（流体域误选为固体域）
+
+  【第二级：求解器日志诊断】
+
+  □ 查看 NLfail → 非线性收敛问题
+  □ 查看 LinErr/LinRes → 线性求解器问题
+  □ 查看 Tfail → 瞬态步进问题
+  □ 查看收敛图趋势（下降/振荡/平坦/发散）
+
+  【第三级：收敛性改善（逐项尝试，每次只改一项）】
+
+  1. 改善初始值 → 先用简化模型求解，结果作为复杂模型初值
+  2. 逐步求解 → 多物理场先解单场，再逐步耦合
+  3. 加密网格 → 梯度大的区域局部加密
+  4. 添加人工扩散 → 对流主导问题时
+  5. 手动设置变量缩放 → Study → Solver → Dependent Variables → Scale
+  6. 转为瞬态求解 → 用瞬态趋近稳态
+  7. 参数延拓法 → 从容易收敛的参数逐步 ramp 到目标值
+  8. 切换求解器 → Fully Coupled ↔ Segregated；Direct ↔ Iterative
+
+
+======================================================================
+四、GUI 优先法（获取正确 API 的最佳途径）
+======================================================================
+
+  1. 在 COMSOL Desktop GUI 中手动搭建模型
+  2. File → Save As → Model File for Java (.java)
+  3. 打开生成的 Java 文件，复制构造函数名、属性名、模型结构
+  4. 以此为基础修改参数
+
+  这消除了所有构造函数名猜测和标签不匹配问题。
+
+
+======================================================================
+五、关键知识库文章速查
+======================================================================
+
+  KB 103  | 非线性稳态模型收敛改善
+          | 初始值、逐步求解、BC一致性、网格、缩放、瞬态、延拓
+
+  KB 964  | Failed to Find a Solution
+          | 病态矩阵、高度非线性、无稳态解、粗网格
+
+  KB 1193 | Maximum Number of Linear Iterations Reached
+          | 增加线性迭代、换预条件器、用 Direct 求解器
+
+  KB 1240 | 手动设置变量缩放
+          | Study → Solver → Dependent Variables → Scale
+
+  KB 1258 | Fully Coupled vs Segregated / Direct vs Iterative
+          | FC需Direct、Segregated省内存、互相切换尝试
+
+  KB 1260 | 线性稳态模型不求解
+          | BC是否完全约束、材料是否为零、几何是否连通
+
+  KB 1262 | 瞬态模型收敛改善
+          | 网格细化、收紧容差、Events接口、一致初始化
+
+  KB 1127 | 非线性瞬态模型收敛
+          | 降阻尼因子、紧非线性容差、参数延拓
+
+  KB 1030 | Out of Memory During LU Factorization
+          | 用 Iterative 替代 Direct、降离散阶数、粗化网格
+
+======================================================================

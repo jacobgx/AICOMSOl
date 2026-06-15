@@ -1,0 +1,657 @@
+/*
+ * k_dot_p_method_strained_wurtzite_gan_band_structure.java
+ */
+
+import com.comsol.model.*;
+import com.comsol.model.util.*;
+
+/** Model exported on Apr 30 2026, 12:58 by COMSOL 6.3.0.290. */
+public class k_dot_p_method_strained_wurtzite_gan_band_structure {
+
+  public static Model run() {
+    Model model = ModelUtil.create("Model");
+
+    model
+         .modelPath("D:\\Program Files\\COMSOL\\COMSOL63\\Multiphysics\\applications\\Semiconductor_Module\\Verification_Examples");
+
+    model.component().create("comp1", true);
+
+    model.component("comp1").geom().create("geom1", 2);
+
+    model.component("comp1").mesh().create("mesh1");
+
+    model.component("comp1").physics().create("schr", "SchrodingerEquation", "geom1");
+    model.component("comp1").physics("schr").field("dimensionless").field("psi1");
+    model.component("comp1").physics("schr").field("dimensionless").component(new String[]{"psi1", "psi2", "psi3"});
+
+    model.study().create("std1");
+    model.study("std1").create("eigv", "Eigenvalue");
+    model.study("std1").feature("eigv").set("ftplistmethod", "manual");
+    model.study("std1").feature("eigv").set("neigs", "3");
+    model.study("std1").feature("eigv").set("eigunit", "");
+    model.study("std1").feature("eigv").set("shift", "0.1");
+    model.study("std1").feature("eigv").set("linpsolnum", "auto");
+    model.study("std1").feature("eigv").set("solnum", "auto");
+    model.study("std1").feature("eigv").set("notsolnum", "auto");
+    model.study("std1").feature("eigv").set("outputmap", new String[]{});
+    model.study("std1").feature("eigv").set("ngenAUX", "1");
+    model.study("std1").feature("eigv").set("goalngenAUX", "1");
+    model.study("std1").feature("eigv").set("ngenAUX", "1");
+    model.study("std1").feature("eigv").set("goalngenAUX", "1");
+    model.study("std1").feature("eigv").setSolveFor("/physics/schr", true);
+
+    model.component("comp1").geom("geom1").lengthUnit("\u00c5");
+    model.component("comp1").geom("geom1").create("sq1", "Square");
+    model.component("comp1").geom("geom1").runPre("fin");
+
+    model.component("comp1").spatialCoord(new String[]{"x", "z", "z"});
+    model.component("comp1").spatialCoord(new String[]{"x", "z", "y"});
+
+    model.component("comp1").materialCoord(new String[]{"X", "Z", "Z"});
+    model.component("comp1").materialCoord(new String[]{"X", "Z", "Y"});
+
+    model.param().label("\u53c2\u6570 1 - GaN");
+    model.param().set("Del1", "16[meV]");
+    model.param().descr("Del1", "\u80fd\u91cf\u53c2\u6570");
+    model.param().set("Delso", "12[meV]");
+    model.param().set("Del2", "Delso/3");
+    model.param().set("Del3", "4[meV]");
+    model.param().set("Del", "sqrt(2)*Del3");
+    model.param().set("A1", "-6.56");
+    model.param().descr("A1", "\u4ef7\u5e26\u6709\u6548\u8d28\u91cf\u53c2\u6570");
+    model.param().set("A2", "-0.91");
+    model.param().set("A3", "5.65");
+    model.param().set("A4", "-2.83");
+    model.param().set("A5", "-3.13");
+    model.param().set("A6", "-4.86");
+    model.param().set("D1", "0.7[eV]");
+    model.param().descr("D1", "\u53d8\u5f62\u52bf");
+    model.param().set("D2", "2.1[eV]");
+    model.param().set("D3", "1.4[eV]");
+    model.param().set("D4", "-0.7[eV]");
+    model.param().set("C13", "15.8e11[dyn/cm^2]");
+    model.param().descr("C13", "\u5f39\u6027\u521a\u5ea6\u5e38\u6570");
+    model.param().set("C33", "26.7e11[dyn/cm^2]");
+    model.param("default").setShowInParamSel(false);
+    model.param().create("par2");
+    model.param("par2").label("\u53c2\u6570 2 - \u626b\u63cf");
+    model.param("par2").set("epsxx", "-0.01");
+    model.param("par2").descr("epsxx", "\u5e94\u53d8\uff0cxx");
+    model.param("par2").set("epsyy", "epsxx");
+    model.param("par2").descr("epsyy", "\u5e94\u53d8\uff0cyy");
+    model.param("par2").set("epszz", "-2*C13/C33*epsxx");
+    model.param("par2").descr("epszz", "\u5e94\u53d8\uff0czz");
+    model.param("par2").set("kp", "0[rad/nm]");
+    model.param("par2").descr("kp", "\u6b63\u8f74\uff1akx\uff0c\u8d1f\u8f74\uff1akz");
+    model.param("par2").set("kx", "if(kp>0,kp,0[rad/nm])");
+    model.param("par2").set("ky", "0[rad/nm]");
+    model.param("par2").set("kz", "if(kp<0,-kp,0[rad/nm])");
+    model.param().create("par3");
+    model.param("par3").label("\u53c2\u6570 3 - \u89e3\u6790\u516c\u5f0f");
+    model.param("par3").setShowInParamSel(false);
+    model.param("par3").set("F", "Del1+Del2+lm+th");
+    model.param("par3").descr("F", "\u65b9\u7a0b (34)");
+    model.param("par3").set("G", "Del1-Del2+lm+th");
+    model.param("par3").set("lm", "hbar_const^2/2/me_const*(A1*kz^2+A2*(kx^2+ky^2))+lmeps");
+    model.param("par3").set("lmeps", "D1*epszz+D2*(epsxx+epsyy)");
+    model.param("par3").set("th", "hbar_const^2/2/me_const*(A3*kz^2+A4*(kx^2+ky^2))+theps");
+    model.param("par3").set("theps", "D3*epszz+D4*(epsxx+epsyy)");
+    model.param("par3").set("Kt", "hbar_const^2/2/me_const*A5*kt^2");
+    model.param("par3").descr("Kt", "\u65b9\u7a0b (42)");
+    model.param("par3").set("Ht", "hbar_const^2/2/me_const*A6*kt*kz");
+    model.param("par3").set("kt", "sqrt(kx^2+ky^2)");
+
+    model.component("comp1").physics().create("ge", "GlobalEquations", "geom1");
+
+    model.study("std1").feature("eigv").setSolveFor("/physics/ge", true);
+
+    model.component("comp1").physics("ge").prop("EquationForm").set("form", "Automatic");
+
+    model.component("comp1").geom("geom1").run();
+
+    model.component("comp1").physics("ge").feature("ge1").setIndex("name", "u1", 0, 0);
+    model.component("comp1").physics("ge").feature("ge1")
+         .setIndex("equation", "(F*u1+Kt*u2-i*Ht*u3)/1[meV]-lambda*u1", 0, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("name", "u2", 1, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("equation", "", 1, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("initialValueU", 0, 1, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("initialValueUt", 0, 1, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("description", "", 1, 0);
+    model.component("comp1").physics("ge").feature("ge1")
+         .setIndex("equation", "(Kt*u1+G*u2+(Del-i*Ht)*u3)/1[meV]-lambda*u2", 1, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("name", "u3", 2, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("equation", "", 2, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("initialValueU", 0, 2, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("initialValueUt", 0, 2, 0);
+    model.component("comp1").physics("ge").feature("ge1").setIndex("description", "", 2, 0);
+    model.component("comp1").physics("ge").feature("ge1")
+         .setIndex("equation", "(i*Ht*u1+(Del+i*Ht)*u2+lm*u3)/1[meV]-lambda*u3", 2, 0);
+    model.component("comp1").physics("schr").prop("ModelProperties").set("lambda_scale", "1[meV]");
+    model.component("comp1").physics("schr").create("H2nd1", "SecondOrderHamiltonianSemicond", 2);
+    model.component("comp1").physics("schr").feature("H2nd1")
+         .label("\u4e8c\u9636\u54c8\u5bc6\u987f 1\uff1a\u5bf9\u89d2 F\u3001G\u3001lambda");
+    model.component("comp1").physics("schr").feature("H2nd1").selection().all();
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 2, 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A1+A3", 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 2, 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "F: lambda+theta", 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A2+A4", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "F: lambda+theta", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 2, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 2, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 2, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A1+A3", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 2, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "G: lambda+theta", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 2, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 2, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A2+A4", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "G: lambda+theta", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 3, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 3, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 2, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A1", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 2, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "lambda", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("m", 3, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("n", 3, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("A", "A2", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd1").setIndex("desc", "lambda", 5, 0);
+    model.component("comp1").physics("schr").feature("meff1").active(false);
+    model.component("comp1").physics("schr").feature("ve1")
+         .label("\u7535\u5b50\u52bf\u80fd 1\uff1a\u5bf9\u89d2 F\u3001G\u3001lambda");
+    model.component("comp1").physics("schr").feature("ve1").set("Ve_psi1", "Del1+Del2+lmeps+theps");
+    model.component("comp1").physics("schr").feature("ve1").set("Ve_psi2", "Del1-Del2+lmeps+theps");
+    model.component("comp1").physics("schr").feature("ve1").set("Ve_psi3", "lmeps");
+    model.component("comp1").physics("schr").create("H2nd2", "SecondOrderHamiltonianSemicond", 2);
+    model.component("comp1").physics("schr").feature("H2nd2")
+         .label("\u4e8c\u9636\u54c8\u5bc6\u987f 2\uff1a\u975e\u5bf9\u89d2 Kt\u3001Ht");
+    model.component("comp1").physics("schr").feature("H2nd2").selection().all();
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 2, 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "A5", 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Kt", 0, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 2, 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "A5", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Kt", 1, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 3, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "-i*A6", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 2, 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Ht", 2, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 3, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "i*A6", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 2, 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Ht", 3, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 2, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 3, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "-i*A6", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 2, 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Ht", 4, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("i", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", 0, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 1, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Description", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("m", 3, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("n", 2, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("A", "i*A6", 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("j", 2, 5, 0);
+    model.component("comp1").physics("schr").feature("H2nd2").setIndex("desc", "Ht", 5, 0);
+    model.component("comp1").physics("schr").create("H0th1", "ZerothOrderHamiltonianSemicond", 2);
+    model.component("comp1").physics("schr").feature("H0th1")
+         .label("\u96f6\u9636\u54c8\u5bc6\u987f 1\uff1a\u975e\u5bf9\u89d2 Delta");
+    model.component("comp1").physics("schr").feature("H0th1").selection().all();
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("m", 2, 0, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("n", 3, 0, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("H0", "Del*2*me_const/hbar_const^2", 0, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("desc", "Delta", 0, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("H0", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("H0", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("m", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("n", 1, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("H0", 0, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("desc", "Description", 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("m", 3, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("n", 2, 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("H0", "Del*2*me_const/hbar_const^2", 1, 0);
+    model.component("comp1").physics("schr").feature("H0th1").setIndex("desc", "Delta", 1, 0);
+    model.component("comp1").physics("schr").create("pc1", "PeriodicCondition", 1);
+    model.component("comp1").physics("schr").feature("pc1").selection().set(1, 4);
+    model.component("comp1").physics("schr").feature("pc1").set("PeriodicType", "Floquet");
+    model.component("comp1").physics("schr").feature("pc1").set("kF", new String[]{"kx", "kz", "0"});
+    model.component("comp1").physics("schr").feature().duplicate("pc2", "pc1");
+    model.component("comp1").physics("schr").feature("pc2").selection().set(2, 3);
+
+    model.component("comp1").mesh("mesh1").create("map1", "Map");
+    model.component("comp1").mesh("mesh1").feature("map1").create("dis1", "Distribution");
+    model.component("comp1").mesh("mesh1").feature("map1").feature("dis1").selection().all();
+    model.component("comp1").mesh("mesh1").feature("map1").feature("dis1").set("numelem", 2);
+    model.component("comp1").mesh("mesh1").run();
+
+    model.study("std1").label("\u7814\u7a76 1\uff1a\u56fe 5 \u859b\u5b9a\u8c14\u65b9\u7a0b");
+    model.study("std1").setGenPlots(false);
+    model.study("std1").feature("eigv").set("shift", "10");
+    model.study("std1").feature("eigv").setSolveFor("/physics/ge", false);
+    model.study("std1").feature("eigv").set("useparam", true);
+    model.study("std1").feature("eigv").set("sweeptype", "filled");
+    model.study("std1").feature("eigv").setIndex("pname", "epsxx", 0);
+    model.study("std1").feature("eigv").setIndex("plistarr", "", 0);
+    model.study("std1").feature("eigv").setIndex("punit", "", 0);
+    model.study("std1").feature("eigv").setIndex("pname", "epsxx", 0);
+    model.study("std1").feature("eigv").setIndex("plistarr", "", 0);
+    model.study("std1").feature("eigv").setIndex("punit", "", 0);
+    model.study("std1").feature("eigv").setIndex("plistarr", "0 -0.01", 0);
+    model.study("std1").feature("eigv").setIndex("pname", "epsyy", 1);
+    model.study("std1").feature("eigv").setIndex("plistarr", "", 1);
+    model.study("std1").feature("eigv").setIndex("punit", "", 1);
+    model.study("std1").feature("eigv").setIndex("pname", "epsyy", 1);
+    model.study("std1").feature("eigv").setIndex("plistarr", "", 1);
+    model.study("std1").feature("eigv").setIndex("punit", "", 1);
+    model.study("std1").feature("eigv").setIndex("pname", "kp", 1);
+    model.study("std1").feature("eigv").setIndex("plistarr", "range(-0.12,0.005,0.12)", 1);
+
+    return model;
+  }
+
+  public static Model run2(Model model) {
+    model.study("std1").feature("eigv").setIndex("punit", "1/angstrom", 1);
+    model.study("std1").createAutoSequences("all");
+
+    model.sol("sol1").runAll();
+
+    model.result().create("pg1", "PlotGroup1D");
+    model.result("pg1").run();
+    model.result("pg1").label("\u56fe 5 \u672a\u53d1\u751f\u5e94\u53d8");
+    model.result("pg1").set("data", "none");
+    model.result("pg1").set("titletype", "label");
+    model.result("pg1").set("xlabelactive", true);
+    model.result("pg1").set("xlabel", "\u8d1f\u8f74\uff1akz \u6b63\u8f74\uff1akx (1/angstrom)");
+    model.result("pg1").set("ylabelactive", true);
+    model.result("pg1").set("ylabel", "\u80fd\u91cf (meV)");
+    model.result("pg1").set("axislimits", true);
+    model.result("pg1").set("xmin", -0.12);
+    model.result("pg1").set("xmax", 0.12);
+    model.result("pg1").set("ymin", -100);
+    model.result("pg1").set("ymax", 50);
+    model.result("pg1").create("glob1", "Global");
+    model.result("pg1").feature("glob1").set("markerpos", "datapoints");
+    model.result("pg1").feature("glob1").set("linewidth", "preference");
+    model.result("pg1").feature("glob1").label("\u5168\u5c40 1 - \u859b\u5b9a\u8c14\u65b9\u7a0b HH");
+    model.result("pg1").feature("glob1").set("data", "dset1");
+    model.result("pg1").feature("glob1").setIndex("looplevelinput", "first", 2);
+    model.result("pg1").feature("glob1").setIndex("looplevelinput", "last", 0);
+    model.result("pg1").feature("glob1").set("expr", new String[]{});
+    model.result("pg1").feature("glob1").set("descr", new String[]{});
+    model.result("pg1").feature("glob1").setIndex("expr", "lambda", 0);
+    model.result("pg1").feature("glob1").setIndex("descr", "HH", 0);
+    model.result("pg1").feature("glob1").set("xdata", "expr");
+    model.result("pg1").feature("glob1").set("xdataexpr", "kp/1[angstrom^-1]");
+    model.result("pg1").feature().duplicate("glob2", "glob1");
+    model.result("pg1").run();
+    model.result("pg1").feature("glob2").label("\u5168\u5c40 1 - \u859b\u5b9a\u8c14\u65b9\u7a0b LH");
+    model.result("pg1").feature("glob2").setIndex("looplevelinput", "manualindices", 0);
+    model.result("pg1").feature("glob2").setIndex("looplevelindices", 2, 0);
+    model.result("pg1").feature("glob2").setIndex("descr", "LH", 0);
+    model.result("pg1").feature().duplicate("glob3", "glob2");
+    model.result("pg1").run();
+    model.result("pg1").feature("glob3").label("\u5168\u5c40 1 - \u859b\u5b9a\u8c14\u65b9\u7a0b CH");
+    model.result("pg1").feature("glob3").setIndex("looplevelinput", "first", 0);
+    model.result("pg1").feature("glob3").setIndex("descr", "CH", 0);
+    model.result("pg1").run();
+    model.result().duplicate("pg2", "pg1");
+    model.result("pg2").run();
+    model.result("pg2").label("\u56fe 5 -1% \u5e94\u53d8");
+    model.result("pg2").run();
+    model.result("pg2").feature("glob1").setIndex("looplevelinput", "last", 2);
+    model.result("pg2").run();
+    model.result("pg2").feature("glob2").setIndex("looplevelinput", "last", 2);
+    model.result("pg2").run();
+    model.result("pg2").feature("glob3").setIndex("looplevelinput", "last", 2);
+
+    model.study().create("std2");
+    model.study("std2").label("\u7814\u7a76 2\uff1a\u56fe 5 \u89e3\u6790");
+    model.study("std2").setGenPlots(false);
+    model.study("std2").feature().copy("eigv", "std1/eigv");
+    model.study("std2").feature("eigv").set("eigsolver", "lapack");
+    model.study("std2").feature("eigv").setSolveFor("/physics/schr", false);
+    model.study("std2").feature("eigv").setSolveFor("/physics/ge", true);
+    model.study("std2").feature("eigv").setIndex("plistarr", "range(-0.12,0.01,0.12)", 1);
+    model.study("std2").createAutoSequences("all");
+
+    model.sol("sol2").runAll();
+
+    model.result("pg1").run();
+    model.result("pg1").feature().duplicate("glob4", "glob3");
+    model.result("pg1").run();
+    model.result("pg1").feature("glob4").label("\u5168\u5c40 1 - \u89e3\u6790");
+    model.result("pg1").feature("glob4").set("data", "dset2");
+    model.result("pg1").feature("glob4").setIndex("looplevelinput", "all", 0);
+    model.result("pg1").feature("glob4").setIndex("descr", "\u89e3\u6790", 0);
+    model.result("pg1").feature("glob4").set("linestyle", "none");
+    model.result("pg1").feature("glob4").set("linemarker", "circle");
+    model.result("pg1").run();
+    model.result("pg2").run();
+    model.result("pg2").feature().copy("glob4", "pg1/glob4");
+    model.result("pg2").run();
+    model.result("pg2").feature("glob4").setIndex("looplevelinput", "last", 2);
+    model.result("pg2").run();
+
+    model.study().create("std3");
+    model.study("std3").label("\u7814\u7a76 3\uff1a\u4e8c\u7ef4\u8272\u6563\u859b\u5b9a\u8c14\u65b9\u7a0b\u3002");
+    model.study("std3").setGenPlots(false);
+    model.study("std3").feature().copy("eigv", "std1/eigv");
+    model.study("std3").feature("eigv").setIndex("pname", "kx", 0);
+    model.study("std3").feature("eigv").setIndex("plistarr", "range(0,0.1,1)*0.07", 0);
+    model.study("std3").feature("eigv").setIndex("punit", "1/angstrom", 0);
+    model.study("std3").feature("eigv").setIndex("pname", "kz", 1);
+    model.study("std3").feature("eigv").setIndex("plistarr", "range(0,0.1,1)*0.07", 1);
+    model.study("std3").createAutoSequences("all");
+
+    model.sol("sol3").runAll();
+
+    model.result().evaluationGroup().create("eg1", "EvaluationGroup");
+    model.result().evaluationGroup("eg1").label("\u8ba1\u7b97\u7ec4 1\uff1aHH");
+    model.result().evaluationGroup("eg1").set("data", "dset3");
+    model.result().evaluationGroup("eg1").setIndex("looplevelinput", "last", 0);
+    model.result().evaluationGroup("eg1").create("gev1", "EvalGlobal");
+    model.result().evaluationGroup("eg1").feature("gev1")
+         .label("\u5168\u5c40\u8ba1\u7b97 1\uff1a\u859b\u5b9a\u8c14\u65b9\u7a0b");
+    model.result().evaluationGroup("eg1").feature("gev1").set("expr", new String[]{});
+    model.result().evaluationGroup("eg1").feature("gev1").set("descr", new String[]{});
+    model.result().evaluationGroup("eg1").feature("gev1").setIndex("expr", "lambda", 0);
+    model.result().evaluationGroup("eg1").feature("gev1").setIndex("descr", "HH (Schr)", 0);
+    model.result().evaluationGroup("eg1").run();
+    model.result().create("pg3", "PlotGroup2D");
+    model.result("pg3").set("data", "none");
+    model.result("pg3").create("tbls1", "TableSurface");
+    model.result("pg3").feature("tbls1").set("source", "evaluationgroup");
+    model.result("pg3").feature("tbls1").set("evaluationgroup", "eg1");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls1").label("\u8868\u683c\u9762\u56fe 1\uff1aHH (Schr)");
+    model.result("pg3").feature("tbls1").set("coldata", 4);
+    model.result("pg3").feature("tbls1").create("hght1", "TableHeight");
+    model.result("pg3").run();
+    model.result("pg3").run();
+    model.result("pg3").label("\u4e8c\u7ef4\u80fd\u5e26\u7ed3\u6784\uff0c-1% \u5e94\u53d8");
+    model.result("pg3").set("titletype", "label");
+    model.result().evaluationGroup().duplicate("eg2", "eg1");
+    model.result().evaluationGroup("eg2").label("\u8ba1\u7b97\u7ec4 2\uff1aLH");
+    model.result().evaluationGroup("eg2").setIndex("looplevelinput", "manualindices", 0);
+    model.result().evaluationGroup("eg2").setIndex("looplevelindices", 2, 0);
+    model.result().evaluationGroup("eg2").feature("gev1").setIndex("descr", "LH (Schr)", 0);
+    model.result().evaluationGroup("eg2").run();
+    model.result("pg3").run();
+    model.result("pg3").feature().duplicate("tbls2", "tbls1");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls2").label("\u8868\u683c\u9762\u56fe 2\uff1aLH (Schr)");
+    model.result("pg3").feature("tbls2").set("evaluationgroup", "eg2");
+    model.result("pg3").feature("tbls2").set("inheritplot", "tbls1");
+    model.result().evaluationGroup().duplicate("eg3", "eg2");
+    model.result().evaluationGroup("eg3").label("\u8ba1\u7b97\u7ec4 3\uff1aCH");
+    model.result().evaluationGroup("eg3").setIndex("looplevelinput", "first", 0);
+    model.result().evaluationGroup("eg3").feature("gev1").setIndex("descr", "CH (Schr)", 0);
+    model.result().evaluationGroup("eg3").run();
+    model.result("pg3").run();
+    model.result("pg3").feature().duplicate("tbls3", "tbls2");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls3").label("\u8868\u683c\u9762\u56fe 3\uff1aCH (Schr)");
+    model.result("pg3").feature("tbls3").set("evaluationgroup", "eg3");
+    model.result("pg3").run();
+
+    model.study().create("std4");
+    model.study("std4").label("\u7814\u7a76 4\uff1a\u4e8c\u7ef4\u8272\u6563\u89e3\u6790");
+    model.study("std4").setGenPlots(false);
+    model.study("std4").feature().copy("eigv", "std3/eigv");
+    model.study("std4").feature("eigv").set("eigsolver", "lapack");
+    model.study("std4").feature("eigv").setSolveFor("/physics/schr", false);
+    model.study("std4").feature("eigv").setSolveFor("/physics/ge", true);
+    model.study("std4").createAutoSequences("all");
+
+    model.sol("sol4").runAll();
+
+    model.result().evaluationGroup("eg1").feature().duplicate("gev2", "gev1");
+    model.result().evaluationGroup("eg1").feature("gev2").label("\u5168\u5c40\u8ba1\u7b97 2\uff1a\u89e3\u6790");
+    model.result().evaluationGroup("eg1").feature("gev2").set("data", "dset4");
+    model.result().evaluationGroup("eg1").feature("gev2").setIndex("looplevelinput", "last", 0);
+    model.result().evaluationGroup("eg1").feature("gev2").setIndex("descr", "HH (Anal)", 0);
+    model.result().evaluationGroup("eg1").run();
+    model.result("pg3").run();
+    model.result("pg3").feature().duplicate("tbls4", "tbls1");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls4").label("\u8868\u683c\u9762\u56fe 4\uff1aHH (Anal)");
+    model.result("pg3").feature("tbls4").set("coldata", 8);
+    model.result("pg3").feature("tbls4").set("coloring", "uniform");
+    model.result("pg3").feature("tbls4").set("color", "gray");
+    model.result("pg3").feature("tbls4").set("wireframe", true);
+    model.result("pg3").feature("tbls4").set("inheritplot", "tbls1");
+    model.result("pg3").feature("tbls4").set("inheritcolor", false);
+    model.result().evaluationGroup("eg2").feature().duplicate("gev2", "gev1");
+    model.result().evaluationGroup("eg2").feature("gev2").label("\u5168\u5c40\u8ba1\u7b97 2\uff1a\u89e3\u6790");
+    model.result().evaluationGroup("eg2").feature("gev2").set("data", "dset4");
+    model.result().evaluationGroup("eg2").feature("gev2").setIndex("looplevelinput", "manualindices", 0);
+    model.result().evaluationGroup("eg2").feature("gev2").setIndex("looplevelindices", 2, 0);
+    model.result().evaluationGroup("eg2").feature("gev2").setIndex("descr", "LH (Anal)", 0);
+    model.result().evaluationGroup("eg2").run();
+    model.result("pg3").run();
+    model.result("pg3").feature().duplicate("tbls5", "tbls4");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls5").label("\u8868\u683c\u9762\u56fe 5\uff1aLH (Anal)");
+    model.result("pg3").feature("tbls5").set("evaluationgroup", "eg2");
+    model.result().evaluationGroup("eg3").feature().duplicate("gev2", "gev1");
+    model.result().evaluationGroup("eg3").feature("gev2").label("\u5168\u5c40\u8ba1\u7b97 2\uff1a\u89e3\u6790");
+    model.result().evaluationGroup("eg3").feature("gev2").set("data", "dset4");
+    model.result().evaluationGroup("eg3").feature("gev2").setIndex("looplevelinput", "first", 0);
+    model.result().evaluationGroup("eg3").feature("gev2").setIndex("descr", "CH (Anal)", 0);
+    model.result().evaluationGroup("eg3").run();
+    model.result("pg3").run();
+    model.result("pg3").feature().duplicate("tbls6", "tbls5");
+    model.result("pg3").run();
+    model.result("pg3").feature("tbls6").label("\u8868\u683c\u9762\u56fe 6\uff1aCH (Anal)");
+    model.result("pg3").feature("tbls6").set("evaluationgroup", "eg3");
+    model.result("pg3").run();
+
+    model.title("\u4f7f\u7528 k.p \u6cd5\u5206\u6790\u5e94\u53d8\u7ea4\u950c\u77ff GaN \u80fd\u5e26\u7ed3\u6784");
+
+    model
+         .description("\u672c\u57fa\u51c6\u6a21\u578b\u8ba1\u7b97\u672a\u53d1\u751f\u5e94\u53d8\u548c\u53d1\u751f\u5e94\u53d8\u7684\u5757\u72b6 GaN \u7ea4\u950c\u77ff\u6676\u4f53\u7684\u4ef7\u5e26\u7ed3\u6784\uff0c\u4e3a\u60f3\u8981\u4f7f\u7528\u201c\u859b\u5b9a\u8c14\u65b9\u7a0b\u201d\u63a5\u53e3\u5efa\u7acb\u591a\u4e2a\u6ce2\u51fd\u6570\u5206\u91cf\u7684\u7528\u6237\u63d0\u4f9b\u5b66\u4e60\u6559\u7a0b\u3002\u8be5\u6a21\u578b\u9075\u5faa Chuang \u548c Chang \u5728\u53c2\u8003\u6587\u732e\u4e2d\u7ed9\u51fa\u7684\u516c\u5f0f\uff0c\u4f7f\u7528\u5185\u7f6e\u7279\u5f81\u6765\u8f93\u5165\u54c8\u5bc6\u987f\u77e9\u9635\u7684\u5bf9\u89d2\u7ebf\u548c\u975e\u5bf9\u89d2\u7ebf\u5143\u7d20\uff0c\u5e76\u5728\u6a21\u578b\u6587\u6863\u4e2d\u63d0\u4f9b\u8be6\u7ec6\u7684\u64cd\u4f5c\u8bf4\u660e\u3002\u8ba1\u7b97\u51fa\u7684\u7279\u5f81\u503c\u4e0e\u6587\u732e\u4e2d\u7684\u89e3\u6790\u89e3\u548c\u56fe\u00a05 \u543b\u5408\u8f83\u597d\u3002");
+
+    model.result("pg3").feature("tbls4").set("tablechanged", false);
+    model.result("pg3").feature("tbls4").set("showparam", false);
+    model.result("pg3").feature("tbls1").set("tablechanged", false);
+    model.result("pg3").feature("tbls1").set("showparam", false);
+    model.result("pg3").feature("tbls5").set("tablechanged", true);
+    model.result("pg3").feature("tbls5").set("showparam", false);
+    model.result("pg3").feature("tbls2").set("tablechanged", true);
+    model.result("pg3").feature("tbls2").set("showparam", false);
+    model.result("pg3").feature("tbls6").set("tablechanged", false);
+    model.result("pg3").feature("tbls6").set("showparam", false);
+    model.result("pg3").feature("tbls3").set("tablechanged", false);
+    model.result("pg3").feature("tbls3").set("showparam", false);
+
+    model.mesh().clearMeshes();
+
+    model.sol("sol1").clearSolutionData();
+    model.sol("sol2").clearSolutionData();
+    model.sol("sol3").clearSolutionData();
+    model.sol("sol4").clearSolutionData();
+
+    model.label("k_dot_p_method_strained_wurtzite_gan_band_structure.mph");
+
+    return model;
+  }
+
+  public static void main(String[] args) {
+    Model model = run();
+    run2(model);
+  }
+
+}

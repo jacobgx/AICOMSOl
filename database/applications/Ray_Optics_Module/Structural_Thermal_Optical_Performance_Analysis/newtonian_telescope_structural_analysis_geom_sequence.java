@@ -1,0 +1,323 @@
+/*
+ * newtonian_telescope_structural_analysis_geom_sequence.java
+ */
+
+import com.comsol.model.*;
+import com.comsol.model.util.*;
+
+/** Model exported on Apr 30 2026, 12:22 by COMSOL 6.3.0.290. */
+public class newtonian_telescope_structural_analysis_geom_sequence {
+
+  public static Model run() {
+    Model model = ModelUtil.create("Model");
+
+    model
+         .modelPath("D:\\Program Files\\COMSOL\\COMSOL63\\Multiphysics\\applications\\Ray_Optics_Module\\Structural_Thermal_Optical_Performance_Analysis");
+
+    model.component().create("comp1", true);
+
+    model.component("comp1").geom().create("geom1", 3);
+    model.component("comp1").geom("geom1").geomRep("comsol");
+
+    model.component("comp1").mesh().create("mesh1");
+    model.component("comp1").mesh("mesh1").contribute("geom/detail", true);
+
+    model.component("comp1").geom("geom1")
+         .label("\u725b\u987f\u671b\u8fdc\u955c\u7ed3\u6784\u5206\u6790\u51e0\u4f55\u5e8f\u5217");
+    model.component("comp1").geom("geom1").lengthUnit("mm");
+
+//    To import content from file, use:
+//    model.param().loadFile("FILENAME");
+    model.param().set("theta", "0[deg]", "\u671b\u8fdc\u955c\u503e\u89d2");
+    model.param().set("cx", "0[mm]", "\u8fd1\u4f3c\u8d28\u5fc3\uff0cx \u5206\u91cf");
+    model.param().set("cy", "0[mm]", "\u8fd1\u4f3c\u8d28\u5fc3\uff0cy \u5206\u91cf");
+    model.param().set("cz", "50[mm]", "\u8fd1\u4f3c\u8d28\u5fc3\uff0cz \u5206\u91cf");
+    model.param().set("d0_tube", "385[mm]", "\u671b\u8fdc\u955c\u955c\u7b52\u5916\u5f84");
+    model.param().set("d1_tube", "275[mm]", "\u671b\u8fdc\u955c\u955c\u7b52\u73af\uff0c\u5185\u5f84");
+    model.param().set("R_truss", "170[mm]", "\u6841\u67b6\u5f84\u5411\u4f4d\u7f6e");
+    model.param().set("phit", "45[deg]", "\u6841\u67b6\u89d2\u5ea6");
+    model.param()
+         .set("dx_truss", "sqrt(R_truss^2-dy_truss^2)-R_truss", "\u6841\u67b6\u504f\u79fb\uff0cx \u5206\u91cf");
+    model.param().set("dy_truss", "R_truss*sin(phit)", "\u6841\u67b6\u504f\u79fb\uff0cy \u5206\u91cf");
+
+    model.component("comp1").geom("geom1").create("wp1", "WorkPlane");
+    model.component("comp1").geom("geom1").feature("wp1").set("unite", true);
+    model.component("comp1").geom("geom1").feature("wp1").label("\u8d28\u5fc3");
+    model.component("comp1").geom("geom1").feature("wp1").set("planetype", "transformed");
+    model.component("comp1").geom("geom1").feature("wp1").set("transaxistype", "x");
+    model.component("comp1").geom("geom1").feature("wp1").set("transrot", "theta");
+    model.component("comp1").geom("geom1")
+         .insertFile("newtonian_telescope_structural_analysis_newtonian_telescope_geom_sequence.mph", "geom1");
+    model.component("comp1").geom("geom1").feature("pi1").setEntry("inputexpr", "n_extra_a", 50);
+    model.component("comp1").geom("geom1").feature("pi1").set("workplane", "wp1");
+    model.component("comp1").geom("geom1").feature("pi1").set("displ", new String[]{"-cx", "-cy", "-cz"});
+    model.component("comp1").geom("geom1").feature("pi1").set("rot", 180);
+    model.component("comp1").geom("geom1").feature("pi1").setEntry("selkeeppnt", "pi1_sel3", true);
+    model.component("comp1").geom("geom1").runPre("fin");
+    model.geom().create("part4", "Part", 3);
+    model.geom("part4").geomRep("comsol");
+    model.geom("part4").label("\u671b\u8fdc\u955c\u955c\u7b52");
+    model.geom("part4").inputParam().set("d0", "350.0[mm]");
+    model.geom("part4").inputParam().descr("d0", "\u955c\u7b52\u76f4\u5f84");
+    model.geom("part4").inputParam().set("d1", "300.0[mm]");
+    model.geom("part4").inputParam().descr("d1", "\u4e0a\u73af\u5185\u5f84");
+    model.geom("part4").inputParam().set("d2", "300.0[mm]");
+    model.geom("part4").inputParam().descr("d2", "\u4e0b\u73af\u5185\u5f84");
+    model.geom("part4").inputParam().set("T1", "10.0[mm]");
+    model.geom("part4").inputParam().descr("T1", "\u4e0a\u73af\u539a\u5ea6");
+    model.geom("part4").inputParam().set("T2", "10.0[mm]");
+    model.geom("part4").inputParam().descr("T2", "\u4e0b\u73af\u539a\u5ea6");
+    model.geom("part4").inputParam().set("Tw", "3.0[mm]");
+    model.geom("part4").inputParam().descr("Tw", "\u58c1\u539a");
+    model.geom("part4").inputParam().set("L", "200.0[mm]");
+    model.geom("part4").inputParam().descr("L", "\u955c\u7b52\u957f\u5ea6");
+    model.geom("part4").create("pi1", "PartInstance");
+    model.geom("part4").feature("pi1").set("selkeepnoncontr", false);
+    model.geom("part4").feature("pi1").set("part", "part3");
+    model.geom("part4").feature("pi1").label("\u4e0a\u73af\u5e95\u5ea7");
+    model.geom("part4").feature("pi1").setEntry("inputexpr", "d0", "d0");
+    model.geom("part4").feature("pi1").setEntry("inputexpr", "d1", "d1");
+    model.geom("part4").run("pi1");
+    model.geom("part4").feature().create("ext1", "Extrude");
+    model.geom("part4").feature("ext1").label("\u4e0a\u73af");
+    model.geom("part4").feature("ext1").selection("inputface").set("pi1", 1);
+    model.geom("part4").feature("ext1").setIndex("distance", "T1", 0);
+    model.geom("part4").run("ext1");
+    model.geom("part4").create("pi2", "PartInstance");
+    model.geom("part4").feature("pi2").set("selkeepnoncontr", false);
+    model.geom("part4").feature("pi2").set("part", "part3");
+    model.geom("part4").feature("pi2").label("\u4e0b\u73af\u5e95\u5ea7");
+    model.geom("part4").feature("pi2").setEntry("inputexpr", "d0", "d0");
+    model.geom("part4").feature("pi2").setEntry("inputexpr", "d1", "d2");
+    model.geom("part4").feature("pi2").set("workplanesrc", "pi1");
+    model.geom("part4").feature("pi2").set("workplane", "wp1");
+    model.geom("part4").feature("pi2").set("displ", new String[]{"0", "0", "L"});
+    model.geom("part4").run("pi2");
+    model.geom("part4").feature().create("ext2", "Extrude");
+    model.geom("part4").feature("ext2").label("\u4e0b\u73af");
+    model.geom("part4").feature("ext2").selection("inputface").set("pi2", 1);
+    model.geom("part4").feature("ext2").setIndex("distance", "T2", 0);
+    model.geom("part4").feature("ext2").set("reverse", true);
+    model.geom("part4").run("ext2");
+    model.geom("part4").create("pi3", "PartInstance");
+    model.geom("part4").feature("pi3").set("selkeepnoncontr", false);
+    model.geom("part4").feature("pi3").set("part", "part3");
+    model.geom("part4").feature("pi3").label("\u58c1\u5e95\u5ea7");
+    model.geom("part4").feature("pi3").setEntry("inputexpr", "d0", "d0");
+    model.geom("part4").feature("pi3").setEntry("inputexpr", "d1", "d0-2*Tw");
+    model.geom("part4").feature("pi3").set("workplanesrc", "pi1");
+    model.geom("part4").feature("pi3").set("workplane", "wp1");
+    model.geom("part4").feature("pi3").set("displ", new String[]{"0", "0", "T1"});
+    model.geom("part4").run("pi3");
+    model.geom("part4").feature().create("ext3", "Extrude");
+    model.geom("part4").feature("ext3").label("\u58c1");
+    model.geom("part4").feature("ext3").selection("inputface").set("pi3", 1);
+    model.geom("part4").feature("ext3").set("specify", "vertices");
+    model.geom("part4").feature("ext3").selection("vertex").set("ext2", 1);
+    model.geom("part4").run("ext3");
+    model.component("comp1").geom("geom1").create("pi5", "PartInstance");
+    model.component("comp1").geom("geom1").feature("pi5").set("selkeepnoncontr", false);
+    model.component("comp1").geom("geom1").feature("pi5").set("part", "part4");
+    model.component("comp1").geom("geom1").feature("pi5").label("\u4e0b\u5e95\u5ea7");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "d0", "d0_tube");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "d1", "d1_tube");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "d2", 0);
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "T1", "5[mm]");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "T2", "30[mm]");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "Tw", "5[mm]");
+    model.component("comp1").geom("geom1").feature("pi5").setEntry("inputexpr", "L", "225[mm]");
+    model.component("comp1").geom("geom1").feature("pi5").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").feature("pi5").set("workplane", "wp2");
+    model.component("comp1").geom("geom1").feature("pi5").set("displ", new String[]{"0", "0", "-185.0[mm]"});
+    model.component("comp1").geom("geom1").run("pi5");
+    model.component("comp1").geom("geom1").create("cyl1", "Cylinder");
+    model.component("comp1").geom("geom1").feature("cyl1").label("\u4e3b\u955c\u652f\u67b6 1");
+    model.component("comp1").geom("geom1").feature("cyl1").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").feature("cyl1").set("workplane", "wp2");
+    model.component("comp1").geom("geom1").feature("cyl1").set("r", 25);
+    model.component("comp1").geom("geom1").feature("cyl1").set("h", 10);
+    model.component("comp1").geom("geom1").run("cyl1");
+    model.component("comp1").geom("geom1").feature("cyl1").set("pos", new int[]{0, 75, 0});
+    model.component("comp1").geom("geom1").run("cyl1");
+    model.component("comp1").geom("geom1").create("rot1", "Rotate");
+    model.component("comp1").geom("geom1").feature("rot1").label("\u4e3b\u955c\u652f\u67b6 1-3");
+    model.component("comp1").geom("geom1").feature("rot1").selection("input").set("cyl1");
+    model.component("comp1").geom("geom1").feature("rot1").set("rot", "0 120 240");
+    model.component("comp1").geom("geom1").feature("rot1").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").run("rot1");
+    model.component("comp1").geom("geom1").create("cyl2", "Cylinder");
+    model.component("comp1").geom("geom1").feature("cyl2").label("\u9ad8\u5ea6\u8f74");
+    model.component("comp1").geom("geom1").feature("cyl2").set("r", 75);
+    model.component("comp1").geom("geom1").feature("cyl2").set("h", 450);
+    model.component("comp1").geom("geom1").feature("cyl2").set("pos", new String[]{"-225", "0", "-cz"});
+    model.component("comp1").geom("geom1").feature("cyl2").set("axistype", "x");
+    model.component("comp1").geom("geom1").feature("cyl2").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").feature("cyl2").set("workplane", "wp1");
+    model.component("comp1").geom("geom1").run("cyl2");
+    model.component("comp1").geom("geom1").create("pard1", "PartitionDomains");
+    model.component("comp1").geom("geom1").feature("pard1").label("\u9ad8\u5ea6\u8f74\u5206\u5272\u57df");
+    model.component("comp1").geom("geom1").feature("pard1").selection("domain").set("cyl2", 1);
+    model.component("comp1").geom("geom1").feature("pard1").set("partitionwith", "faces");
+    model.component("comp1").geom("geom1").feature("pard1").selection("face").set("pi5(3)", 1, 2, 7, 10);
+    model.component("comp1").geom("geom1").run("pard1");
+    model.component("comp1").geom("geom1").create("del1", "Delete");
+    model.component("comp1").geom("geom1").feature("del1").label("\u9ad8\u5ea6\u8f74\u5220\u9664\u5b9e\u4f53");
+    model.component("comp1").geom("geom1").feature("del1").selection("input").init(3);
+    model.component("comp1").geom("geom1").feature("del1").selection("input").set("pard1", 2);
+    model.component("comp1").geom("geom1").run("del1");
+    model.component("comp1").geom("geom1").create("pi6", "PartInstance");
+    model.component("comp1").geom("geom1").feature("pi6").set("selkeepnoncontr", false);
+    model.component("comp1").geom("geom1").feature("pi6").set("part", "part4");
+    model.component("comp1").geom("geom1").feature("pi6").label("\u4e0a\u5e95\u5ea7");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "d0", "d0_tube");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "d1", "d1_tube");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "d2", "d1_tube");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "T1", "5[mm]");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "T2", "2[mm]");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "Tw", "2[mm]");
+    model.component("comp1").geom("geom1").feature("pi6").setEntry("inputexpr", "L", "115.0[mm]");
+    model.component("comp1").geom("geom1").feature("pi6").set("workplanesrc", "pi2");
+    model.component("comp1").geom("geom1").feature("pi6").set("workplane", "wp1");
+    model.component("comp1").geom("geom1").feature("pi6").set("displ", new String[]{"0", "0", "-40[mm]"});
+    model.component("comp1").geom("geom1").feature("pi3").setEntry("inputexpr", "d0", "35.0[mm]");
+    model.component("comp1").geom("geom1").feature("pi3").setEntry("inputexpr", "d1", "30.0[mm]");
+    model.component("comp1").geom("geom1").feature("pi3").set("displ", new String[]{"0", "0", "75.0[mm]"});
+    model.component("comp1").geom("geom1").run("pi6");
+    model.component("comp1").geom("geom1").feature().create("ext1", "Extrude");
+    model.component("comp1").geom("geom1").feature("ext1").label("\u526f\u955c\u5e95\u5ea7");
+    model.component("comp1").geom("geom1").feature("ext1").set("extrudefrom", "faces");
+    model.component("comp1").geom("geom1").feature("ext1").selection("inputface").set("pi3", 1);
+    model.component("comp1").geom("geom1").feature("ext1").set("specify", "vertices");
+    model.component("comp1").geom("geom1").feature("ext1").selection("vertex").set("pi2", 2);
+    model.component("comp1").geom("geom1").run("ext1");
+    model.component("comp1").geom("geom1").create("pard2", "PartitionDomains");
+    model.component("comp1").geom("geom1").feature("pard2").label("\u526f\u955c\u5e95\u5ea7\u5206\u5272\u57df");
+    model.component("comp1").geom("geom1").feature("pard2").selection("domain").set("ext1", 1);
+    model.component("comp1").geom("geom1").feature("pard2").set("partitionwith", "faces");
+    model.component("comp1").geom("geom1").feature("pard2").selection("face").set("pi2", 3);
+    model.component("comp1").geom("geom1").run("pard2");
+    model.component("comp1").geom("geom1").create("del2", "Delete");
+    model.component("comp1").geom("geom1").feature("del2").label("\u526f\u955c\u5e95\u5ea7\u5220\u9664\u5b9e\u4f53");
+    model.component("comp1").geom("geom1").feature("del2").selection("input").init(3);
+    model.component("comp1").geom("geom1").feature("del2").selection("input").set("pard2", 1);
+    model.component("comp1").geom("geom1").run("del2");
+    model.component("comp1").geom("geom1").create("blk1", "Block");
+    model.component("comp1").geom("geom1").feature("blk1").label("\u526f\u955c\u652f\u67b6 1");
+    model.component("comp1").geom("geom1").feature("blk1").set("size", new String[]{"d0_tube", "2.5[mm]", "1"});
+    model.component("comp1").geom("geom1").feature("blk1").setIndex("size", "30[mm]", 2);
+    model.component("comp1").geom("geom1").feature("blk1").set("base", "center");
+    model.component("comp1").geom("geom1").feature("blk1").set("pos", new String[]{"0", "0", "58[mm]"});
+    model.component("comp1").geom("geom1").feature("blk1").set("rot", 45);
+    model.component("comp1").geom("geom1").feature("blk1").set("workplanesrc", "pi2");
+    model.component("comp1").geom("geom1").feature("blk1").set("workplane", "wp1");
+    model.component("comp1").geom("geom1").run("blk1");
+    model.component("comp1").geom("geom1").create("pard3", "PartitionDomains");
+    model.component("comp1").geom("geom1").feature("pard3").label("\u526f\u955c\u652f\u67b6\u5206\u5272\u57df");
+    model.component("comp1").geom("geom1").feature("pard3").selection("domain").set("blk1", 1);
+    model.component("comp1").geom("geom1").feature("pard3").set("partitionwith", "faces");
+    model.component("comp1").geom("geom1").feature("pard3").selection("face").set("del2", 1, 10);
+    model.component("comp1").geom("geom1").feature("pard3").selection("face").set("pi6(3)", 5, 9);
+    model.component("comp1").geom("geom1").run("pard3");
+    model.component("comp1").geom("geom1").create("del3", "Delete");
+    model.component("comp1").geom("geom1").feature("del3").label("\u526f\u955c\u652f\u67b6\u5220\u9664\u5b9e\u4f53");
+    model.component("comp1").geom("geom1").feature("del3").selection("input").init(3);
+    model.component("comp1").geom("geom1").feature("del3").selection("input").set("pard3", 1, 3, 5);
+    model.component("comp1").geom("geom1").run("del3");
+    model.component("comp1").geom("geom1").create("rot2", "Rotate");
+    model.component("comp1").geom("geom1").feature("rot2").label("\u526f\u955c\u652f\u67b6 1-2");
+    model.component("comp1").geom("geom1").feature("rot2").selection("input").set("del3");
+    model.component("comp1").geom("geom1").feature("rot2").set("rot", "0 90");
+    model.component("comp1").geom("geom1").feature("rot2").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").run("rot2");
+    model.component("comp1").geom("geom1").create("cyl3", "Cylinder");
+    model.component("comp1").geom("geom1").feature("cyl3").label("\u50cf\u5e73\u9762\u6295\u5f71");
+    model.component("comp1").geom("geom1").feature("cyl3").set("r", "22.5[mm]");
+    model.component("comp1").geom("geom1").feature("cyl3").set("h", "50[mm]");
+    model.component("comp1").geom("geom1").feature("cyl3").set("workplanesrc", "pi4");
+    model.component("comp1").geom("geom1").run("cyl3");
+    model.component("comp1").geom("geom1").create("dif1", "Difference");
+    model.component("comp1").geom("geom1").feature("dif1").label("\u50cf\u5e73\u9762\u5dee\u96c6");
+    model.component("comp1").geom("geom1").feature("dif1").selection("input").set("pi6(3)");
+    model.component("comp1").geom("geom1").feature("dif1").selection("input2").set("cyl3");
+    model.component("comp1").geom("geom1").run("dif1");
+    model.component("comp1").geom("geom1").create("pi7", "PartInstance");
+    model.component("comp1").geom("geom1").feature("pi7").set("selkeepnoncontr", false);
+    model.component("comp1").geom("geom1").feature("pi7").set("part", "part3");
+    model.component("comp1").geom("geom1").feature("pi7").label("\u6841\u67b6\u5e95\u5ea7");
+    model.component("comp1").geom("geom1").feature("pi7").setEntry("inputexpr", "d0", "35[mm]");
+    model.component("comp1").geom("geom1").feature("pi7").setEntry("inputexpr", "d1", "25[mm]");
+    model.component("comp1").geom("geom1").feature("pi7").set("workplanesrc", "pi5");
+    model.component("comp1").geom("geom1").feature("pi7").set("displ", new String[]{"R_truss", "0", "0"});
+    model.component("comp1").geom("geom1").run("pi7");
+    model.component("comp1").geom("geom1").feature().create("ext2", "Extrude");
+    model.component("comp1").geom("geom1").feature("ext2").label("\u6841\u67b6 1");
+    model.component("comp1").geom("geom1").feature("ext2").set("extrudefrom", "faces");
+    model.component("comp1").geom("geom1").feature("ext2").selection("inputface").set("pi7", 1);
+    model.component("comp1").geom("geom1").feature("ext2").set("specify", "vertices");
+    model.component("comp1").geom("geom1").feature("ext2").selection("vertex").set("pi6(1)", 15);
+    model.component("comp1").geom("geom1").feature("ext2").setIndex("displ", "dx_truss", 0, 0);
+    model.component("comp1").geom("geom1").feature("ext2").setIndex("displ", "dy_truss", 0, 1);
+    model.component("comp1").geom("geom1").run("ext2");
+    model.component("comp1").geom("geom1").create("wp2", "WorkPlane");
+    model.component("comp1").geom("geom1").feature("wp2").set("unite", true);
+    model.component("comp1").geom("geom1").feature("wp2").set("planetype", "transformed");
+    model.component("comp1").geom("geom1").feature("wp2").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").feature("wp2").set("transaxistype", "x");
+    model.component("comp1").geom("geom1").feature("wp2").set("transrot", 90);
+    model.component("comp1").geom("geom1").run("wp2");
+    model.component("comp1").geom("geom1").create("wp3", "WorkPlane");
+    model.component("comp1").geom("geom1").feature("wp3").set("unite", true);
+    model.component("comp1").geom("geom1").feature("wp3").set("planetype", "transformed");
+    model.component("comp1").geom("geom1").feature("wp3").set("workplane", "wp2");
+    model.component("comp1").geom("geom1").feature("wp3").set("transaxistype", "y");
+    model.component("comp1").geom("geom1").feature("wp3").set("transrot", -45);
+    model.component("comp1").geom("geom1").run("wp3");
+    model.component("comp1").geom("geom1").create("pard4", "PartitionDomains");
+    model.component("comp1").geom("geom1").feature("pard4").label("\u6841\u67b6\u5206\u5272\u57df 1");
+    model.component("comp1").geom("geom1").feature("pard4").selection("domain").set("ext2", 1);
+    model.component("comp1").geom("geom1").feature("pard4").set("workplane", "wp2");
+    model.component("comp1").geom("geom1").run("pard4");
+    model.component("comp1").geom("geom1").create("pard5", "PartitionDomains");
+    model.component("comp1").geom("geom1").feature("pard5").label("\u6841\u67b6\u5206\u5272\u57df 2");
+    model.component("comp1").geom("geom1").feature("pard5").selection("domain").set("pard4", 2);
+    model.component("comp1").geom("geom1").run("pard5");
+    model.component("comp1").geom("geom1").create("del4", "Delete");
+    model.component("comp1").geom("geom1").feature("del4").label("\u6841\u67b6\u5220\u9664\u5b9e\u4f53");
+    model.component("comp1").geom("geom1").feature("del4").selection("input").init(3);
+    model.component("comp1").geom("geom1").feature("del4").selection("input").set("pard5", 1, 3);
+    model.component("comp1").geom("geom1").run("del4");
+    model.component("comp1").geom("geom1").create("mir1", "Mirror");
+    model.component("comp1").geom("geom1").feature("mir1").label("\u6841\u67b6 2");
+    model.component("comp1").geom("geom1").feature("mir1").set("keep", true);
+    model.component("comp1").geom("geom1").feature("mir1").selection("input").set("del4");
+    model.component("comp1").geom("geom1").feature("mir1").set("axis", new int[]{0, 1, 0});
+    model.component("comp1").geom("geom1").feature("mir1").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").run("mir1");
+    model.component("comp1").geom("geom1").create("rot3", "Rotate");
+    model.component("comp1").geom("geom1").feature("rot3").label("\u671b\u8fdc\u955c\u6841\u67b6 1-8");
+    model.component("comp1").geom("geom1").feature("rot3").selection("input").set("del4", "mir1");
+    model.component("comp1").geom("geom1").feature("rot3").set("rot", "0 90 180 270");
+    model.component("comp1").geom("geom1").feature("rot3").set("workplanesrc", "pi1");
+    model.component("comp1").geom("geom1").run("rot3");
+    model.component("comp1").geom("geom1").create("uni1", "Union");
+    model.component("comp1").geom("geom1").feature("uni1").label("\u671b\u8fdc\u955c\u6841\u67b6\u5e76\u96c6");
+    model.component("comp1").geom("geom1").feature("uni1").selection("input").set("rot3");
+    model.component("comp1").geom("geom1").feature("uni1").set("intbnd", false);
+    model.component("comp1").geom("geom1").feature("uni1").set("selresult", true);
+    model.component("comp1").geom("geom1").feature("uni1").set("selresultshow", "all");
+    model.component("comp1").geom("geom1").run("fin");
+
+    model.title(null);
+
+    model.description("");
+
+    model.label("newtonian_telescope_structural_analysis_geom_sequence.mph");
+
+    return model;
+  }
+
+  public static void main(String[] args) {
+    run();
+  }
+
+}
